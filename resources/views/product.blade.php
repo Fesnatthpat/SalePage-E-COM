@@ -13,7 +13,7 @@
     }" class="container mx-auto px-4 py-8 lg:py-12">
 
         {{-- Grid Layout: มือถือ 1 คอลัมน์ / PC 2 คอลัมน์ --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 border-gray-200 shadow bg-white p-12 rounded-lg">
 
             {{-- ================= COLUMN 1: IMAGE GALLERY (ซ้าย) ================= --}}
             <div class="flex flex-col gap-4">
@@ -99,10 +99,10 @@
                     </div>
 
                     {{-- Buy Button --}}
-                    <button
-                        class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg rounded h-12 transition shadow-md hover:shadow-lg active:scale-[0.98]">
+                    <a href="/cart"
+                        class="flex-1 btn bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg rounded h-12 transition shadow-md hover:shadow-lg active:scale-[0.98]">
                         ซื้อเลย
-                    </button>
+                    </a>
                 </div>
 
                 {{-- Description Tabs --}}
@@ -110,7 +110,7 @@
                     <div class="flex gap-8 text-sm border-b border-gray-200">
                         <button
                             class="text-emerald-600 font-bold border-b-2 border-emerald-600 pb-2 px-1">รายละเอียดสินค้า</button>
-                        <button class="text-gray-500 hover:text-gray-800 pb-2 px-1 transition">รีวิวจากผู้ซื้อ (0)</button>
+                        {{-- <button class="text-gray-500 hover:text-gray-800 pb-2 px-1 transition">รีวิวจากผู้ซื้อ (120)</button> --}}
                     </div>
                     <div class="mt-4 text-gray-600 text-sm leading-7">
                         <p>เสื้อยืดทรง Oversize สไตล์เกาหลี ผลิตจากผ้า Cotton 100% เกรดพรีเมียม สัมผัสนุ่ม ใส่สบาย
@@ -120,10 +120,122 @@
                             <li>วัสดุ: Cotton Comb 100% No.32</li>
                             <li>การดูแลรักษา: ซักเครื่องได้ (แนะนำใส่ถุงถนอมผ้า)</li>
                         </ul>
+                        {{-- img product --}}
+                        <div class="flex flex-2 gap-5 mt-4">
+                            <div class="mt-4">
+                                <img src="/images/T-Shirt-1.png" alt="Product Detail Image"
+                                    class="w-[350px] h-auto rounded-lg border border-gray-200">
+                            </div>
+                            <div class="mt-4">
+                                <img src="/images/T-Shirt-B.png" alt="Product Detail Image"
+                                    class="w-[350px] h-auto rounded-lg border border-gray-200">
+                            </div>
+                            <div class="mt-4">
+                                <img src="/images/T-Shirt-W.png" alt="Product Detail Image"
+                                    class="w-[350px] h-auto rounded-lg border border-gray-200">
+                            </div>
+                        </div>
+
                     </div>
                 </div>
+
+                {{-- รีวิว Tabs --}}
+                <div class="mt-8 border-t border-gray-100 pt-6">
+
+                    {{-- ปุ่มแท็บ --}}
+                    <div class="flex gap-8 text-sm border-b border-gray-200">
+                        <button class="text-gray-500 hover:text-gray-800 pb-2 px-1 transition">
+                            รีวิวจากผู้ซื้อ (3)
+                        </button>
+                    </div>
+
+                    {{-- สรุปคะแนนรวม --}}
+                    <div class="mt-6 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                        <div class="flex items-center gap-6">
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-emerald-600">4.8</div>
+                                <div class="flex items-center justify-center mt-1 text-yellow-400 text-xl">
+                                    ★★★★★
+                                </div>
+                                <p class="text-gray-600 text-sm mt-1">จาก 3 รีวิว</p>
+                            </div>
+
+                            <div class="flex-1">
+                                {{-- แถบคะแนน --}}
+                                @php
+                                    $stars = [
+                                        5 => 2,
+                                        4 => 1,
+                                        3 => 0,
+                                        2 => 0,
+                                        1 => 0,
+                                    ];
+                                @endphp
+
+                                @foreach ($stars as $star => $count)
+                                    @php
+                                        $percent = ($count / 120) * 100;
+                                    @endphp
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="w-6 text-sm text-gray-700">{{ $star }}★</span>
+                                        <div class="flex-1 h-2 bg-gray-200 rounded">
+                                            <div class="h-full bg-yellow-400 rounded" style="width: {{ $percent }}%">
+                                            </div>
+                                        </div>
+                                        <span class="w-10 text-right text-sm text-gray-600">{{ $count }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- รีวิวจากผู้ใช้แบบจำลอง --}}
+                    <div class="mt-6 space-y-6">
+
+                        {{-- รีวิว 1 --}}
+                        <div class="border-b pb-4">
+                            <div class="flex items-center justify-between">
+                                <div class="font-semibold text-gray-800">คุณบาส</div>
+                                <div class="text-yellow-400 text-lg">★★★★★</div>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-1">
+                                ผ้านุ่มมาก ใส่สบายจริง ๆ สีตรงปก ส่งไว แนะนำเลยครับ!
+                            </p>
+                            <p class="text-gray-400 text-xs mt-1">รีวิวเมื่อ 3 วันที่แล้ว</p>
+                        </div>
+
+                        {{-- รีวิว 2 --}}
+                        <div class="border-b pb-4">
+                            <div class="flex items-center justify-between">
+                                <div class="font-semibold text-gray-800">คุณเมย์</div>
+                                <div class="text-yellow-400 text-lg">★★★★☆</div>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-1">
+                                เนื้อผ้าดีมาก แต่ไซซ์ Oversize ใหญ่ไปนิดสำหรับผู้หญิงตัวเล็กโดยรวมชอบค่ะ
+                            </p>
+                            <p class="text-gray-400 text-xs mt-1">รีวิวเมื่อ 1 สัปดาห์ที่แล้ว</p>
+                        </div>
+
+                        {{-- รีวิว 3 --}}
+                        <div class="border-b pb-4">
+                            <div class="flex items-center justify-between">
+                                <div class="font-semibold text-gray-800">คุณต้น</div>
+                                <div class="text-yellow-400 text-lg">★★★★★</div>
+                            </div>
+                            <p class="text-gray-600 text-sm mt-1">
+                                คุณภาพเกินราคา เดี๋ยวจะกลับมาซื้อเพิ่มอีกหลายตัว!
+                            </p>
+                            <p class="text-gray-400 text-xs mt-1">รีวิวเมื่อ 2 สัปดาห์ที่แล้ว</p>
+                        </div>
+
+                    </div>
+
+                </div>
+
 
             </div>
         </div>
     </div>
 @endsection
+
+

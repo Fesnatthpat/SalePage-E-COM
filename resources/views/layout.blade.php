@@ -6,16 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Thai:wght@100..900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
-    <div class="container mx-auto max-w-full sticky top-0 z-10">
+    <div class="container mx-auto max-w-full sticky top-0 z-10 ">
         <div class="navbar bg-base-100 shadow-sm flex justify-between px-5">
             {{-- LOGO H&M-R --}}
-            <div
+            <a href="/"
                 class="navbar-center hidden md:block w-16 h-16 cursor-pointer hover:shadow-lg shadow-base-300 hover:shadow-base-500 hover:rounded-lg">
                 <img src="/images/logo_hm.png" class="w-full h-full" alt="">
-            </div>
+            </a>
 
             {{-- Top-Navbar-HBG --}}
             <div class="md:hidden">
@@ -30,9 +35,9 @@
                         </div>
                         <ul tabindex="-1"
                             class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-                            <li class="font-bold"><a href="/">Home</a></li>
-                            <li class="font-bold"><a href="#">Products</a></li>
-                            <li class="font-bold"><a href="#">About</a></li>
+                            <li class="font-bold"><a href="/">หน้าหลัก</a></li>
+                            {{-- <li class="font-bold"><a href="/">สินค้า</a></li> --}}
+                            <li class="font-bold"><a href="/cart">รายการคำสั่งซื้อ</a></li>
 
                             <a href="/cart" class="dropdown dropdown-end">
                                 <div tabindex="0" role="button"
@@ -52,16 +57,16 @@
                 </div>
             </div>
             {{-- LOGO H&M-R --}}
-            <div
+            <a href="/" 
                 class="navbar-center md:hidden w-16 h-16 cursor-pointer hover:shadow-lg shadow-base-300 hover:shadow-base-500 hover:rounded-lg">
                 <img src="/images/logo_hm.png" class="w-full h-full" alt="">
-            </div>
+            </a>
             {{-- Top-Navbar md --}}
             <div class="hidden md:block">
                 <ul class="flex justify-between items-center w-full space-x-5">
-                    <li class="font-bold"><a href="/">Home</a></li>
-                    <li class="font-bold"><a href="#">Products</a></li>
-                    <li class="font-bold"><a href="#">About</a></li>
+                    <li class="font-bold"><a href="/">หน้าหลัก</a></li>
+                    {{-- <li class="font-bold"><a href="/">สินค้า</a></li> --}}
+                    <li class="font-bold"><a href="/cart">รายการคำสั่งซื้อ</a></li>
 
                     <a href="/cart" class="dropdown dropdown-end">
                         <div tabindex="0" role="button"
@@ -82,7 +87,7 @@
     </div>
 
     {{-- Contents --}}
-    <div class="min-h-screen">
+    <div class="min-h-screen bg-gray-100">
         @yield('content')
     </div>
 
