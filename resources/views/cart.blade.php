@@ -5,7 +5,7 @@
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     {{-- container-1 --}}
-    <div class="container p-12 mx-auto " x-data="{ quantity: 1 }">
+    <div class="container p-12 mx-auto " x-data="{ quantity: 2 }">
 
         <div class="p-12 border-gray-200 shadow bg-white rounded-lg">
             {{-- con-2 --}}

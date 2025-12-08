@@ -87,7 +87,7 @@
     </div>
 
     {{-- Contents --}}
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-[#f5f5f5] py-8">
         @yield('content')
     </div>
 
