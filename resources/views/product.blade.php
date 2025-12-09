@@ -18,10 +18,8 @@
             <div class="grid grid-cols-1 lg:grid-cols-2">
 
                 {{-- ==========================================
-                     ส่วนที่ 1: รูปภาพ (Gallery) 
-                     - PC: ซ้ายบน (col 1 / row 1)
-                     - มีเส้นขอบขวาคั่นกลางใน PC
-                   ========================================== --}}
+                      ส่วนที่ 1: รูปภาพ (Gallery) 
+                    ========================================== --}}
                 <div class="p-6 lg:p-10 lg:border-r border-gray-200 lg:col-start-1 lg:row-start-1">
                     <div class="flex flex-col gap-4">
                         {{-- รูปใหญ่ --}}
@@ -45,10 +43,8 @@
                 </div>
 
                 {{-- ==========================================
-                     ส่วนที่ 2: ข้อมูลสินค้า + ปุ่มซื้อ (Product Info)
-                     - PC: ขวาบน (col 2 / row 1)
-                     - Mobile: ต่อจากรูปภาพทันที
-                   ========================================== --}}
+                      ส่วนที่ 2: ข้อมูลสินค้า + ปุ่มซื้อ (Product Info)
+                    ========================================== --}}
                 <div class="p-6 lg:p-10 lg:col-start-2 lg:row-start-1">
                     <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">เสื้อยืด Oversize Cotton 100%
                     </h1>
@@ -99,10 +95,8 @@
                 </div>
 
                 {{-- ==========================================
-                     ส่วนที่ 3: รายละเอียดสินค้า (Description)
-                     - PC: ซ้ายล่าง (col 1 / row 2)
-                     - มีเส้นขอบขวาและเส้นขอบบนคั่น
-                   ========================================== --}}
+                      ส่วนที่ 3: รายละเอียดสินค้า (Description)
+                    ========================================== --}}
                 <div class="p-6 lg:p-10 border-t lg:border-r border-gray-200 lg:col-start-1 lg:row-start-2 bg-gray-50/50">
                     <h3 class="text-lg font-bold text-gray-900 border-b-2 border-emerald-500 inline-block pb-1 mb-4">
                         รายละเอียดสินค้า</h3>
@@ -126,10 +120,8 @@
                 </div>
 
                 {{-- ==========================================
-                     ส่วนที่ 4: รีวิว (Reviews)
-                     - PC: ขวาล่าง (col 2 / row 2)
-                     - มีเส้นขอบบนคั่น
-                   ========================================== --}}
+                      ส่วนที่ 4: รีวิว (Reviews) - ปรับปรุงใหม่เพิ่มรูป
+                    ========================================== --}}
                 <div class="p-6 lg:p-10 border-t border-gray-200 lg:col-start-2 lg:row-start-2">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-bold text-gray-900">รีวิวจากผู้ซื้อ (3)</h3>
@@ -150,32 +142,81 @@
 
                     {{-- รายการรีวิว --}}
                     <div class="space-y-6">
-                        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                            <div class="flex justify-between items-start">
-                                <span class="font-semibold text-sm text-gray-900">คุณบาส</span>
-                                <span class="text-xs text-gray-400">3 วันที่แล้ว</span>
+                        {{-- รีวิว 1 --}}
+                        <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                            <div class="flex gap-4">
+                                {{-- Avatar ลูกค้า --}}
+                                <img src="https://ui-avatars.com/api/?name=Bas&background=0D9488&color=fff"
+                                    class="w-10 h-10 rounded-full border border-gray-200 flex-shrink-0" alt="Avatar">
+
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="font-semibold text-sm text-gray-900">คุณบาส</span>
+                                            <div class="text-yellow-400 text-xs mt-0.5">★★★★★</div>
+                                        </div>
+                                        <span class="text-xs text-gray-400">3 วันที่แล้ว</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">ผ้านุ่มมาก ใส่สบายจริง ๆ
+                                        สีตรงปก ส่งไว แนะนำเลยครับ!</p>
+
+                                    {{-- รูปรีวิวจากลูกค้า --}}
+                                    <div class="flex gap-2 mt-3">
+                                        <img src="/images/T-Shirt-1.png"
+                                            class="w-16 h-16 rounded-md object-cover border border-gray-200 cursor-pointer hover:opacity-80">
+                                        <img src="/images/T-Shirt-B.png"
+                                            class="w-16 h-16 rounded-md object-cover border border-gray-200 cursor-pointer hover:opacity-80">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-yellow-400 text-xs mt-1">★★★★★</div>
-                            <p class="text-sm text-gray-600 mt-2">ผ้านุ่มมาก ใส่สบายจริง ๆ สีตรงปก ส่งไว แนะนำเลยครับ!</p>
                         </div>
 
-                        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                            <div class="flex justify-between items-start">
-                                <span class="font-semibold text-sm text-gray-900">คุณเมย์</span>
-                                <span class="text-xs text-gray-400">1 สัปดาห์</span>
+                        {{-- รีวิว 2 --}}
+                        <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                            <div class="flex gap-4">
+                                {{-- Avatar ลูกค้า --}}
+                                <img src="https://ui-avatars.com/api/?name=May&background=random"
+                                    class="w-10 h-10 rounded-full border border-gray-200 flex-shrink-0" alt="Avatar">
+
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="font-semibold text-sm text-gray-900">คุณเมย์</span>
+                                            <div class="text-yellow-400 text-xs mt-0.5">★★★★☆</div>
+                                        </div>
+                                        <span class="text-xs text-gray-400">1 สัปดาห์</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">เนื้อผ้าดีมาก แต่ไซซ์ Oversize
+                                        ใหญ่ไปนิดสำหรับผู้หญิงตัวเล็ก</p>
+                                </div>
                             </div>
-                            <div class="text-yellow-400 text-xs mt-1">★★★★☆</div>
-                            <p class="text-sm text-gray-600 mt-2">เนื้อผ้าดีมาก แต่ไซซ์ Oversize
-                                ใหญ่ไปนิดสำหรับผู้หญิงตัวเล็ก</p>
                         </div>
 
-                        <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                            <div class="flex justify-between items-start">
-                                <span class="font-semibold text-sm text-gray-900">คุณต้น</span>
-                                <span class="text-xs text-gray-400">2 สัปดาห์</span>
+                        {{-- รีวิว 3 --}}
+                        <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                            <div class="flex gap-4">
+                                {{-- Avatar ลูกค้า --}}
+                                <img src="https://ui-avatars.com/api/?name=Ton&background=random"
+                                    class="w-10 h-10 rounded-full border border-gray-200 flex-shrink-0" alt="Avatar">
+
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="font-semibold text-sm text-gray-900">คุณต้น</span>
+                                            <div class="text-yellow-400 text-xs mt-0.5">★★★★★</div>
+                                        </div>
+                                        <span class="text-xs text-gray-400">2 สัปดาห์</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-2 leading-relaxed">คุณภาพเกินราคา
+                                        เดี๋ยวจะกลับมาซื้อเพิ่มอีกหลายตัว!</p>
+
+                                    {{-- รูปรีวิวจากลูกค้า --}}
+                                    <div class="flex gap-2 mt-3">
+                                        <img src="/images/T-Shirt-W.png"
+                                            class="w-16 h-16 rounded-md object-cover border border-gray-200 cursor-pointer hover:opacity-80">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-yellow-400 text-xs mt-1">★★★★★</div>
-                            <p class="text-sm text-gray-600 mt-2">คุณภาพเกินราคา เดี๋ยวจะกลับมาซื้อเพิ่มอีกหลายตัว!</p>
                         </div>
                     </div>
                 </div>
