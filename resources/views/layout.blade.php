@@ -36,10 +36,10 @@
                         <ul tabindex="-1"
                             class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
                             <li class="font-bold"><a href="/">หน้าหลัก</a></li>
-                            {{-- <li class="font-bold"><a href="/">สินค้า</a></li> --}}
+                            <li class="font-bold"><a href="/ordertracking">เช็คสถานะ</a></li>
                             <li class="font-bold"><a href="/cart">รายการคำสั่งซื้อ</a></li>
 
-                            <a href="/cart" class="dropdown dropdown-end">
+                            <a href="/login" class="dropdown dropdown-end">
                                 <div tabindex="0" role="button"
                                     class="btn btn-ghost btn-circle w-full shadow-2xl border-2 border-gray-100">
                                     <div class="indicator">
@@ -65,10 +65,10 @@
             <div class="hidden md:block">
                 <ul class="flex justify-between items-center w-full space-x-5">
                     <li class="font-bold"><a href="/">หน้าหลัก</a></li>
-                    {{-- <li class="font-bold"><a href="/">สินค้า</a></li> --}}
+                    <li class="font-bold"><a href="/ordertracking">เช็คสถานะ</a></li>
                     <li class="font-bold"><a href="/cart">รายการคำสั่งซื้อ</a></li>
 
-                    <a href="/cart" class="dropdown dropdown-end">
+                    <a href="/login" class="dropdown dropdown-end">
                         <div tabindex="0" role="button"
                             class="btn btn-ghost btn-circle shadow-2xl border-2 border-gray-100">
                             <div class="indicator">
@@ -87,7 +87,7 @@
     </div>
 
     {{-- Contents --}}
-    <div class="min-h-screen bg-[#f5f5f5] py-8">
+    <div class="min-h-screen bg-[#f5f5f5]">
         @yield('content')
     </div>
 
