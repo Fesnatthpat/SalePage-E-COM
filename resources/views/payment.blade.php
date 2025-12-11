@@ -419,7 +419,7 @@
                         class="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center gap-4 w-full sm:w-max mb-6 lg:mb-0">
                         <input type="checkbox" class="checkbox checkbox-primary" />
                         <div class="w-32 h-auto flex items-center justify-center bg-white p-2 border rounded">
-                            <span class="text-xs">QR Code</span>
+                            <img src="/images/ci-qrpayment-img-01.png" alt="QR Payment" class="w-full h-auto" />
                         </div>
                         <span class="text-sm font-medium text-gray-600">ชำระผ่านพร้อมเพย์</span>
                     </div>
