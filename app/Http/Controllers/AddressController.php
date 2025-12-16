@@ -2,24 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Amphure; // สำคัญมาก: ต้องมีบรรทัดนี้เพื่อรับค่าจากฟอร์ม
+use App\Models\Amphure;
 use App\Models\DeliveryAddress;
 use App\Models\District;
 use App\Models\Province;
-use Illuminate\Http\Request; // สำคัญ: เรียกใช้ Model ที่อยู่จัดส่ง
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // [สำคัญ] ต้องมีเพื่อเรียกใช้ Auth::id()
 
 class AddressController extends Controller
 {
+    // 1. แสดงหน้าฟอร์ม
     public function index()
     {
-        // 1. ดึงข้อมูลจังหวัด (สำหรับ Dropdown)
+        // 1.1 ดึงข้อมูลจังหวัด (สำหรับ Dropdown)
         $provinces = Province::orderBy('name_th', 'asc')->get();
 
-        // 2. ดึงข้อมูลที่อยู่ทั้งหมด (สำคัญ! บรรทัดนี้คือตัวแก้ปัญหา)
-        // ต้อง use App\Models\DeliveryAddress; ด้านบนด้วยนะครับ
-        $addresses = DeliveryAddress::orderBy('created_at', 'desc')->get();
+        // 1.2 ดึงข้อมูลที่อยู่ทั้งหมด "เฉพาะของผู้ใช้ที่ล็อกอินอยู่"
+        // ใช้ where('user_id', Auth::id()) เพื่อกรอง
+        $addresses = DeliveryAddress::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        // 3. ส่งตัวแปร $provinces และ $addresses ไปที่หน้า View
+        // 1.3 ส่งตัวแปร $provinces และ $addresses ไปที่หน้า View
         return view('payment', compact('provinces', 'addresses'));
     }
 
@@ -43,7 +47,7 @@ class AddressController extends Controller
         return response()->json($districts);
     }
 
-    // 4. บันทึกข้อมูล (ฟังก์ชันที่คุณขาดหายไป)
+    // 4. บันทึกข้อมูลที่อยู่ใหม่
     public function saveAddress(Request $request)
     {
         // ตรวจสอบข้อมูล
@@ -59,6 +63,7 @@ class AddressController extends Controller
 
         // บันทึกลงฐานข้อมูล
         DeliveryAddress::create([
+            'user_id' => Auth::id(), // [สำคัญ] ระบุว่าที่อยู่นี้เป็นของใคร
             'fullname' => $request->fullname,
             'phone' => $request->phone,
             'address_line1' => $request->address_line1,
@@ -70,7 +75,7 @@ class AddressController extends Controller
             'note' => $request->note,
         ]);
 
-        return back()->with('success', 'บันทึกข้อมูลเรียบร้อยแล้ว!');
+        return back()->with('success', 'บันทึกที่อยู่จัดส่งเรียบร้อยแล้ว!');
     }
 
     // 5. อัปเดตข้อมูล (แก้ไข)
@@ -86,8 +91,22 @@ class AddressController extends Controller
             'zipcode' => 'required',
         ]);
 
-        $address = DeliveryAddress::findOrFail($id);
-        $address->update($request->all());
+        // ค้นหาที่อยู่ โดยต้องเป็นของ User คนนี้เท่านั้น (ป้องกันการแอบแก้ของคนอื่น)
+        $address = DeliveryAddress::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $address->update([
+            'fullname' => $request->fullname,
+            'phone' => $request->phone,
+            'address_line1' => $request->address_line1,
+            'address_line2' => $request->address_line2,
+            'province_id' => $request->province_id,
+            'amphure_id' => $request->amphure_id,
+            'district_id' => $request->district_id,
+            'zipcode' => $request->zipcode,
+            'note' => $request->note,
+        ]);
 
         return back()->with('success', 'แก้ไขที่อยู่เรียบร้อยแล้ว!');
     }
@@ -95,7 +114,11 @@ class AddressController extends Controller
     // 6. ลบข้อมูล
     public function destroy($id)
     {
-        $address = DeliveryAddress::findOrFail($id);
+        // ค้นหาที่อยู่ โดยต้องเป็นของ User คนนี้เท่านั้น
+        $address = DeliveryAddress::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
         $address->delete();
 
         return back()->with('success', 'ลบที่อยู่เรียบร้อยแล้ว!');

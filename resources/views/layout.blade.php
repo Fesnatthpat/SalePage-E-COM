@@ -1,114 +1,215 @@
 <!doctype html>
-<html>
+<html lang="th">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Thai:wght@100..900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet">
+    <title>H&M-R Store</title>
 </head>
 
-<body class="font-['Noto_Sans_Thai']"> {{-- เพิ่ม Font ให้ Body --}}
+<body class="font-['Noto_Sans_Thai'] bg-[#f9fafb]">
 
-    <div class="container mx-auto max-w-full sticky top-0 z-50 ">
-        <div class="navbar bg-base-100 shadow-sm flex justify-between px-5">
-            {{-- LOGO H&M-R --}}
-            <a href="/"
-                class="navbar-center hidden md:block w-16 h-16 cursor-pointer hover:shadow-lg shadow-base-300 hover:shadow-base-500 hover:rounded-lg">
-                <img src="/images/logo_hm.png" class="w-full h-full object-contain" alt="H&M-R Logo">
-            </a>
+    {{-- Navbar Container --}}
+    <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="navbar min-h-[4rem] px-0">
 
-            {{-- Top-Navbar-HBG (Mobile) --}}
-            <div class="md:hidden">
+                {{-- ================= 1. NAVBAR START (ซ้าย) ================= --}}
                 <div class="navbar-start">
-                    <div class="dropdown">
-                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    {{-- 1.1 Mobile: Hamburger Menu --}}
+                    <div class="dropdown md:hidden">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle -ml-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 6h16M4 12h16M4 18h7" />
                             </svg>
                         </div>
                         <ul tabindex="-1"
-                            class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow">
-                            <li class="font-bold"><a href="/">หน้าหลัก</a></li>
-                            <li class="font-bold"><a href="/orderhistory">ประวัติการสั่งซื้อ</a></li>
-                            <li class="font-bold"><a href="/ordertracking">เช็คสถานะ</a></li>
-                            <li class="font-bold"><a href="/cart">รายการคำสั่งซื้อ</a></li>
+                            class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-64 p-2 shadow-lg">
+                            <li><a href="/" class="py-3 font-bold">หน้าหลัก</a></li>
+                            <li><a href="/allproducts" class="py-3 font-bold">สินค้าทั้งหมด</a></li>
 
-                            <a href="/login" class="dropdown dropdown-end">
-                                <div tabindex="0" role="button"
-                                    class="btn btn-ghost btn-circle w-full shadow-2xl border-2 border-gray-100">
-                                    <div class="indicator">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                        <span class="badge badge-sm indicator-item bg-red-500 text-white">8</span>
+                            @auth
+                                <li><a href="/orderhistory" class="py-3 font-bold">ประวัติการสั่งซื้อ</a></li>
+                                <li><a href="/ordertracking" class="py-3 font-bold">เช็คสถานะ</a></li>
+                                <li class="border-t mt-2 pt-2">
+                                    <div class="flex items-center gap-2 p-2">
+                                        @if (Auth::user()->avatar)
+                                            <img src="{{ Auth::user()->avatar }}" class="w-8 h-8 rounded-full border">
+                                        @else
+                                            <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+                                        @endif
+                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
                                     </div>
+                                </li>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                        @csrf
+                                        <button type="submit"
+                                            class="text-red-500 font-bold py-2 w-full text-left">ออกจากระบบ</button>
+                                    </form>
+                                </li>
+                            @else
+                                <div class="p-2 mt-2">
+                                    <a href="/login"
+                                        class="btn bg-[#06C755] hover:bg-[#00B900] text-white w-full border-none">
+                                        เข้าสู่ระบบด้วย LINE
+                                    </a>
                                 </div>
-                            </a>
+                            @endauth
                         </ul>
                     </div>
-                </div>
-            </div>
-            {{-- LOGO H&M-R (Mobile Center) --}}
-            <a href="/"
-                class="navbar-center md:hidden w-12 h-12 cursor-pointer hover:shadow-lg shadow-base-300 hover:shadow-base-500 hover:rounded-lg">
-                <img src="/images/logo_hm.png" class="w-full h-full object-contain" alt="">
-            </a>
-            
-            {{-- Top-Navbar md --}}
-            <div class="hidden md:block">
-                <ul class="flex justify-between items-center w-full space-x-5">
-                    <li class="font-bold hover:text-emerald-600 transition"><a href="/">หน้าหลัก</a></li>
-                    <li class="font-bold hover:text-emerald-600 transition"><a href="/orderhistory">ประวัติการสั่งซื้อ</a></li>
-                    <li class="font-bold hover:text-emerald-600 transition"><a href="/ordertracking">เช็คสถานะ</a></li>
-                    <li class="font-bold hover:text-emerald-600 transition"><a href="/cart">รายการคำสั่งซื้อ</a></li>
 
-                    <a href="/login" class="dropdown dropdown-end">
-                        <div tabindex="0" role="button"
-                            class="btn btn-ghost btn-circle shadow-md border border-gray-200 hover:bg-gray-100">
+                    {{-- 1.2 Desktop: Logo --}}
+                    <a href="/" class="hidden md:flex btn btn-ghost text-xl p-0 hover:bg-transparent">
+                        <img src="/images/logo_hm.png" alt="Logo" class="h-10 md:h-12 w-auto object-contain">
+                    </a>
+                </div>
+
+
+                {{-- ================= 2. NAVBAR CENTER (กลาง) ================= --}}
+                <div class="navbar-center">
+                    {{-- 2.1 Mobile: Logo --}}
+                    <a href="/" class="md:hidden btn btn-ghost text-xl p-0 hover:bg-transparent">
+                        <img src="/images/logo_hm.png" alt="Logo" class="h-10 w-auto object-contain">
+                    </a>
+
+                    {{-- 2.2 Desktop: Menu Links --}}
+                    <ul class="menu menu-horizontal px-1 gap-6 text-base font-medium text-gray-600 hidden md:flex">
+                        <li><a href="/" class="hover:text-emerald-600 hover:bg-transparent">หน้าหลัก</a></li>
+                        <li><a href="/allproducts" class="hover:text-emerald-600 hover:bg-transparent">สินค้า</a></li>
+
+                        @auth
+                            <li><a href="/orderhistory"
+                                    class="hover:text-emerald-600 hover:bg-transparent">ประวัติการสั่งซื้อ</a></li>
+                            <li><a href="/ordertracking" class="hover:text-emerald-600 hover:bg-transparent">เช็คสถานะ</a>
+                            </li>
+                        @else
+                            <li><a href="/login" class="hover:text-emerald-600 hover:bg-transparent">ประวัติการสั่งซื้อ</a>
+                            </li>
+                            <li><a href="/login" class="hover:text-emerald-600 hover:bg-transparent">เช็คสถานะ</a></li>
+                        @endauth
+                    </ul>
+                </div>
+
+
+                {{-- ================= 3. NAVBAR END (ขวา) ================= --}}
+                <div class="navbar-end flex items-center gap-2 md:gap-4">
+
+                    {{-- Cart Icon --}}
+                    @auth
+                        <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-gray-100">
                             <div class="indicator">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                <span class="badge badge-sm indicator-item bg-red-500 text-white border-none">8</span>
+                                <span class="badge badge-sm indicator-item bg-red-500 text-white border-none">3</span>
                             </div>
+                        </a>
+                    @endauth
+
+                    {{-- Login / User Profile --}}
+                    @guest
+                        {{-- ปุ่มเข้าสู่ระบบ (ซ่อนในมือถือ เพราะมีใน Hamburger แล้ว) --}}
+                        <a href="/login"
+                            class="hidden md:flex items-center gap-2 btn bg-[#06C755] hover:bg-[#00B900] text-white border-none px-5 rounded-full shadow-sm hover:shadow-md transition">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M472 0H40C17.9 0 0 17.9 0 40v304c0 22.1 17.9 40 40 40h214.3l98.4 91.8c6.6 6.2 16.8 6.7 23.9 1.4 5.9-4.3 9.4-11 9.4-18.3v-74.9H472c22.1 0 40-17.9 40-40V40c0-22.1-17.9-40-40-40zM362.2 178.6c11.7 0 21.1 9.4 21.1 21.1 0 11.7-9.4 21.1-21.1 21.1-11.7 0-21.1-9.4-21.1-21.1 0-11.7 9.5-21.1 21.1-21.1zm-88.7 0c11.7 0 21.1 9.4 21.1 21.1 0 11.7-9.4 21.1-21.1 21.1-11.7 0-21.1-9.4-21.1-21.1 0-11.7 9.4-21.1 21.1-21.1zm-88.7 0c11.7 0 21.1 9.4 21.1 21.1 0 11.7-9.4 21.1-21.1 21.1-11.7 0-21.1-9.4-21.1-21.1 0-11.7 9.4-21.1 21.1-21.1z" />
+                            </svg>
+                            เข้าสู่ระบบ
+                        </a>
+                    @endguest
+
+                    @auth
+                        {{-- [แก้ไข] เพิ่ม class "hidden md:block" เพื่อซ่อนรูปโปรไฟล์ในมือถือ --}}
+                        <div class="dropdown dropdown-end hidden md:block">
+                            <div tabindex="0" role="button"
+                                class="btn btn-ghost btn-circle avatar border border-emerald-200 ring-2 ring-transparent hover:ring-emerald-400 transition">
+                                <div class="w-10 rounded-full">
+                                    @if (Auth::user()->avatar)
+                                        <img src="{{ Auth::user()->avatar }}" alt="Profile" />
+                                    @else
+                                        <img
+                                            src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=0D8ABC&color=fff" />
+                                    @endif
+                                </div>
+                            </div>
+                            <ul tabindex="-1"
+                                class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-white rounded-xl w-64 border border-gray-100">
+                                <li class="menu-title px-4 py-3 bg-gray-50 rounded-t-lg border-b border-gray-100 mb-2">
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="text-xs font-normal text-gray-500">เข้าสู่ระบบโดย</span>
+                                        <span class="text-sm font-bold text-gray-800 truncate w-full"
+                                            title="{{ Auth::user()->name }}">
+                                            {{ Auth::user()->name }}
+                                        </span>
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="/profile"
+                                        class="py-3 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors duration-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <span class="font-medium">ข้อมูลส่วนตัว</span>
+                                    </a>
+                                </li>
+                                <div class="divider my-1 before:bg-gray-100 after:bg-gray-100"></div>
+                                <li>
+                                    <form action="{{ route('logout') }}" method="POST" class="w-full p-0 block">
+                                        @csrf
+                                        <button type="submit"
+                                            class="w-full text-left py-3 px-4 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg flex items-center gap-3 transition-colors duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            <span class="font-medium">ออกจากระบบ</span>
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
                         </div>
-                    </a>
-                </ul>
+                    @endauth
+
+                </div>
             </div>
         </div>
     </div>
 
     {{-- Contents --}}
-    <div class="min-h-screen bg-[#f9fafb]"> {{-- ปรับสีพื้นหลังให้อ่อนลงเล็กน้อย --}}
+    <div class="min-h-screen">
         @yield('content')
     </div>
 
-    {{-- ================= FOOTER เริ่มตรงนี้ ================= --}}
-    <div class="bg-base-200 text-base-content">
+    {{-- Footer --}}
+    <div class="bg-base-200 text-base-content mt-10">
         <footer class="footer sm:footer-horizontal p-10 container mx-auto">
-            {{-- Column 1: บริการลูกค้า --}}
+            {{-- Column 1 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">ศูนย์ช่วยเหลือ</h6>
-                <a href="#" class="link link-hover">ติดตามสถานะคำสั่งซื้อ</a>
+                @auth
+                    <a href="/ordertracking" class="link link-hover">ติดตามสถานะคำสั่งซื้อ</a>
+                @else
+                    <a href="/login" class="link link-hover">ติดตามสถานะคำสั่งซื้อ</a>
+                @endauth
                 <a href="#" class="link link-hover">การจัดส่งสินค้า</a>
                 <a href="#" class="link link-hover">การคืนสินค้าและการคืนเงิน</a>
                 <a href="#" class="link link-hover">วิธีการสั่งซื้อ</a>
                 <a href="/contactus" class="link link-hover">ติดต่อเรา</a>
             </nav>
-            
-            {{-- Column 2: หมวดหมู่สินค้า --}}
+
+            {{-- Column 2 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">เลือกซื้อสินค้า</h6>
                 <a href="#" class="link link-hover">เสื้อยืด Oversize</a>
@@ -117,8 +218,8 @@
                 <a href="#" class="link link-hover">สินค้ามาใหม่</a>
                 <a href="#" class="link link-hover text-red-500 font-bold">สินค้าลดราคา</a>
             </nav>
-            
-            {{-- Column 3: เกี่ยวกับเรา --}}
+
+            {{-- Column 3 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">เกี่ยวกับ H&M-R</h6>
                 <a href="#" class="link link-hover">เรื่องราวของเรา</a>
@@ -127,7 +228,7 @@
                 <a href="#" class="link link-hover">เงื่อนไขการใช้งาน</a>
             </nav>
 
-            {{-- Column 4: Newsletter (เพิ่มมาให้ดูดีขึ้น) --}}
+            {{-- Column 4 --}}
             <form>
                 <h6 class="footer-title text-emerald-600 opacity-100">รับข่าวสารและโปรโมชั่น</h6>
                 <fieldset class="form-control w-80">
@@ -135,8 +236,10 @@
                         <span class="label-text">กรอกอีเมลเพื่อรับส่วนลด 10%</span>
                     </label>
                     <div class="join">
-                        <input type="text" placeholder="username@site.com" class="input input-bordered join-item w-full" />
-                        <button class="btn bg-emerald-600 hover:bg-emerald-700 text-white join-item border-none">สมัคร</button>
+                        <input type="text" placeholder="username@site.com"
+                            class="input input-bordered join-item w-full" />
+                        <button
+                            class="btn bg-emerald-600 hover:bg-emerald-700 text-white join-item border-none">สมัคร</button>
                     </div>
                 </fieldset>
             </form>
@@ -145,9 +248,8 @@
         {{-- Footer Bottom --}}
         <footer class="footer bg-base-300 text-base-content border-base-300 border-t px-10 py-4 container mx-auto">
             <aside class="grid-flow-col items-center">
-                {{-- Logo Small --}}
                 <div class="w-10 h-10 grayscale opacity-70">
-                     <img src="/images/logo_hm.png" alt="Logo" class="w-full h-full object-contain">
+                    <img src="/images/logo_hm.png" alt="Logo" class="w-full h-full object-contain">
                 </div>
                 <p>
                     <span class="font-bold text-lg">H&M-R Store Thailand</span>

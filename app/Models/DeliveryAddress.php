@@ -12,6 +12,7 @@ class DeliveryAddress extends Model
     protected $table = 'delivery_addresses';
 
     protected $fillable = [
+        'user_id', // [สำคัญ] เพิ่มบรรทัดนี้ เพื่อให้บันทึกว่าเป็นของใคร
         'fullname',
         'phone',
         'address_line1',
@@ -23,7 +24,13 @@ class DeliveryAddress extends Model
         'note',
     ];
 
-    // --- เพิ่ม Relation เพื่อดึงชื่อไทย ---
+    // --- เพิ่ม Relation ผูกกับ User ---
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // --- Relation เดิมสำหรับดึงชื่อจังหวัด/อำเภอ/ตำบล ---
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_id');

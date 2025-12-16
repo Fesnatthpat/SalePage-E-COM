@@ -1,47 +1,84 @@
 @extends('layout')
 
 @section('content')
+    {{-- ================= MOCK DATA (ข้อมูลจำลองสินค้าแนะนำ) ================= --}}
+    @php
+        $recommendedProducts = [
+            [
+                'name' => 'Oversize Cotton 100% (สีครีม)',
+                'category' => 'เสื้อยืด',
+                'price' => 390,
+                'original_price' => null,
+                'image' => '/images/T-Shirt-1.png',
+                'badge' => 'HOT',
+                'badge_color' => 'badge-error',
+                'rating' => 4,
+            ],
+            [
+                'name' => 'Oversize Cotton 100% (สีดำ)',
+                'category' => 'เสื้อยืด',
+                'price' => 390,
+                'original_price' => null,
+                'image' => '/images/T-Shirt-B.png',
+                'badge' => null,
+                'badge_color' => null,
+                'rating' => 5,
+            ],
+            [
+                'name' => 'กางเกงคาร์โก้ Streetwear',
+                'category' => 'กางเกง',
+                'price' => 590,
+                'original_price' => null,
+                'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Pants',
+                'badge' => 'New',
+                'badge_color' => 'badge-accent',
+                'rating' => null, // ไม่มีดาว ให้โชว์ยอดขายแทน
+                'sales' => '1.2พัน',
+            ],
+            [
+                'name' => 'หมวกแก๊ป Minimal Style',
+                'category' => 'หมวก',
+                'price' => 150,
+                'original_price' => 300,
+                'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Cap',
+                'badge' => '-50%',
+                'badge_color' => 'badge-warning',
+                'rating' => null,
+                'sales' => null,
+            ],
+        ];
+    @endphp
+
     {{-- ================= HERO SECTION ================= --}}
     <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
-
         {{-- Background Image --}}
-        {{-- หมายเหตุ: ผมใส่รูปจาก Unsplash ให้ดูเป็นตัวอย่าง คุณสามารถเปลี่ยน src เป็นรูปสินค้าจริงของคุณได้ --}}
         <div class="absolute inset-0">
             <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop"
                 class="w-full h-full object-cover opacity-60 hover:scale-105 transition-transform duration-1000 ease-in-out"
                 alt="Sale Background">
-            {{-- Gradient Overlay เพื่อให้อ่านตัวหนังสือออกง่ายขึ้น --}}
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         </div>
 
         {{-- Content --}}
         <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-
-            {{-- Badge --}}
             <span
                 class="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-xs font-bold tracking-widest mb-4 animate-bounce">
                 LIMITED TIME OFFER
             </span>
-
-            {{-- Headline --}}
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                 <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2">สมาชิกช้อปสินค้า</span>
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">SALE</span> ก่อนใคร
             </h1>
-
-            {{-- Description --}}
             <p class="text-gray-200 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed font-light">
                 ลดสูงสุด <span class="text-yellow-400 font-bold text-xl">50%</span> | ที่ร้านและออนไลน์ <br
                     class="hidden md:block">
                 เฉพาะสินค้าที่ร่วมรายการ จนกว่าสินค้าจะหมด
             </p>
-
-            {{-- Buttons --}}
             <div class="flex flex-col sm:flex-row gap-4">
-                <button
+                <a href="/products"
                     class="btn bg-white text-gray-900 border-none hover:bg-gray-200 px-8 py-3 rounded-full font-bold text-lg transition-transform hover:-translate-y-1 shadow-lg">
                     ช้อปสินค้าลดราคา
-                </button>
+                </a>
                 <a href="/login">
                     <button
                         class="btn btn-outline text-white border-white hover:bg-white/20 px-8 py-3 rounded-full font-bold text-lg transition-transform hover:-translate-y-1">
@@ -49,16 +86,13 @@
                     </button>
                 </a>
             </div>
-
-            {{-- Terms Text --}}
             <p class="mt-8 text-xs text-gray-400 opacity-80 max-w-lg">
-                *สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน
-                ลงชื่อเข้าใช้เพื่อรับสิทธิพิเศษและเพิ่มสินค้าไปยังกระเป๋าช้อปปิ้ง
+                *สินค้าและราคาของที่ร้านและออนไลน์อาจแตกต่างกัน ลงชื่อเข้าใช้เพื่อรับสิทธิพิเศษ
             </p>
         </div>
     </div>
 
-    {{-- ================= SERVICE BAR (คั่นก่อนเข้าสินค้า) ================= --}}
+    {{-- ================= SERVICE BAR ================= --}}
     <div class="bg-white border-b border-gray-100 py-6">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
@@ -100,7 +134,7 @@
         </div>
     </div>
 
-    {{-- ================= PRODUCTS SECTION ================= --}}
+    {{-- ================= PRODUCTS SECTION (ปรับปรุงใหม่) ================= --}}
     <div class="container mx-auto px-4 mt-12 mb-20">
         {{-- Section Header --}}
         <div class="flex justify-between items-end mb-8">
@@ -108,14 +142,78 @@
                 <h2 class="text-3xl font-bold text-gray-900">สินค้าแนะนำ</h2>
                 <p class="text-gray-500 mt-1">คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
             </div>
-            <a href="/products" class="text-emerald-600 font-bold hover:underline hidden md:block">ดูทั้งหมด →</a>
+            <a href="/allproducts" class="text-emerald-600 font-bold hover:underline hidden md:block">ดูทั้งหมด →</a>
         </div>
 
-        {{-- Include Products --}}
-        @include('allproducts')
+        {{-- Product Grid --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            @foreach ($recommendedProducts as $product)
+                <div
+                    class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
 
+                    {{-- รูปภาพ --}}
+                    <a href="/product">
+                        <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                            <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}"
+                                class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+
+                            {{-- ป้าย Badge --}}
+                            @if ($product['badge'])
+                                <div
+                                    class="absolute top-2 left-2 badge {{ $product['badge_color'] }} text-white gap-1 text-xs font-bold shadow-sm">
+                                    {{ $product['badge'] }}
+                                </div>
+                            @endif
+
+                            {{-- ปุ่มดูรายละเอียด --}}
+                            <div
+                                class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
+                                <a href="/product"
+                                    class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
+                                    ดูรายละเอียด
+                                </a>
+                            </div>
+                        </figure>
+                    </a>
+
+                    {{-- รายละเอียด --}}
+                    <div class="card-body p-4">
+                        <div class="text-xs text-gray-400 mb-1">{{ $product['category'] }}</div>
+                        <h2
+                            class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
+                            <a href="/product" class="hover:text-emerald-600 transition">{{ $product['name'] }}</a>
+                        </h2>
+
+                        <div class="flex justify-between items-end mt-2">
+                            <div class="flex flex-col">
+                                <span
+                                    class="text-lg font-bold text-emerald-600">฿{{ number_format($product['price']) }}</span>
+                                @if ($product['original_price'])
+                                    <span
+                                        class="text-xs text-gray-400 line-through">฿{{ number_format($product['original_price']) }}</span>
+                                @endif
+                            </div>
+
+                            {{-- ดาว หรือ ยอดขาย --}}
+                            @if (isset($product['rating']) && $product['rating'])
+                                <div class="rating rating-xs disabled">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <input type="radio"
+                                            class="mask mask-star-2 {{ $i <= $product['rating'] ? 'bg-orange-400' : 'bg-gray-200' }}" />
+                                    @endfor
+                                </div>
+                            @elseif(isset($product['sales']))
+                                <span class="text-xs text-gray-400">ขายแล้ว {{ $product['sales'] }}</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Mobile View All Button --}}
         <div class="mt-8 text-center md:hidden">
-            <a href="/products" class="btn btn-outline w-full">ดูสินค้าทั้งหมด</a>
+            <a href="/allproducts" class="btn btn-outline w-full">ดูสินค้าทั้งหมด</a>
         </div>
     </div>
 @endsection
