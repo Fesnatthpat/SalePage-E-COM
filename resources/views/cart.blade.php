@@ -39,7 +39,7 @@
                                 <div class="flex-1 mt-1">
                                     <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $details['name'] }}</h1>
                                     {{-- ตัวอย่างแสดง Size/Color (ถ้ามี) --}}
-                                    {{-- <p class="text-xs text-gray-500 mt-1">สี: ดำ, ไซส์: L</p> --}}
+                                    <p class="text-xs text-gray-500 mt-1">สี: ดำ, ไซส์: L</p>
                                 </div>
                             </div>
 

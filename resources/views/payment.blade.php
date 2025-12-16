@@ -76,8 +76,8 @@
                                     </div>
                                     @if ($address->note)
                                         <p
-                                            class="text-orange-600 text-xs mt-2 bg-orange-50 p-2 rounded border border-orange-100 inline-block">
-                                            <span class="font-bold">หมายเหตุ:</span> {{ $address->note }}
+                                            class="text-orange-600 text-xs  mt-2 bg-orange-50 p-2 rounded border border-orange-100 inline-block">
+                                            <span class="font-bold w-full ">หมายเหตุ:</span> {{ $address->note }}
                                         </p>
                                     @endif
                                 </div>
@@ -236,7 +236,7 @@
                                             <div class="form-control w-full">
                                                 <label class="label pt-0"><span
                                                         class="label-text font-medium text-gray-700">หมายเหตุ</span></label>
-                                                <textarea name="note" class="textarea textarea-bordered h-24 focus:textarea-primary">{{ $address->note }}</textarea>
+                                                <textarea name="note" class="textarea textarea-bordered w-full h-24 focus:textarea-primary">{{ $address->note }}</textarea>
                                             </div>
                                         </div>
 
@@ -377,7 +377,7 @@
                             <div class="form-control w-full">
                                 <label class="label pt-0"><span
                                         class="label-text font-medium text-gray-700">หมายเหตุ</span></label>
-                                <textarea name="note" class="textarea textarea-bordered h-24 focus:textarea-primary"
+                                <textarea name="note" class="textarea textarea-bordered w-full h-24 focus:textarea-primary"
                                     placeholder="เช่น ฝากไว้ที่ป้อมยาม"></textarea>
                             </div>
                         </div>

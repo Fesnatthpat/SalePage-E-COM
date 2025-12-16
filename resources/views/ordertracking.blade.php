@@ -43,7 +43,7 @@
                 </div>
                 <div class="flex gap-3">
                     <a href="/contact" class="btn btn-outline btn-sm">ติดต่อร้านค้า</a>
-                    <a href="/payment" class="btn btn-ghost btn-sm">ย้อนกลับ</a>
+                    <a href="/orderhistory" class="btn btn-ghost btn-sm">ย้อนกลับ</a>
                 </div>
             </div>
 

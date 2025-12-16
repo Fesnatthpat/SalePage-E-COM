@@ -8,7 +8,7 @@
                 'name' => 'Oversize Cotton 100% (สีครีม)',
                 'category' => 'เสื้อยืด',
                 'price' => 390,
-                'original_price' => null,
+                'original_price' => 1290,
                 'image' => '/images/T-Shirt-1.png',
                 'badge' => 'HOT',
                 'badge_color' => 'badge-error',
@@ -18,7 +18,7 @@
                 'name' => 'Oversize Cotton 100% (สีดำ)',
                 'category' => 'เสื้อยืด',
                 'price' => 390,
-                'original_price' => null,
+                'original_price' => 2500,
                 'image' => '/images/T-Shirt-B.png',
                 'badge' => null,
                 'badge_color' => null,
@@ -32,7 +32,7 @@
                 'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Pants',
                 'badge' => 'New',
                 'badge_color' => 'badge-accent',
-                'rating' => null, // ไม่มีดาว ให้โชว์ยอดขายแทน
+                'rating' => 1, // ไม่มีดาว ให้โชว์ยอดขายแทน
                 'sales' => '1.2พัน',
             ],
             [
@@ -43,7 +43,7 @@
                 'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Cap',
                 'badge' => '-50%',
                 'badge_color' => 'badge-warning',
-                'rating' => null,
+                'rating' => 5,
                 'sales' => null,
             ],
         ];

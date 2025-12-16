@@ -5,7 +5,7 @@
     {{-- ==================== MOCK DATA (จำลองข้อมูลตรงนี้เลย ไม่ต้องใช้ Controller) ==================== --}}
     @php
         // 1. จำลองหมวดหมู่
-        $categories = ['เสื้อยืด', 'กางเกง', 'รองเท้า', 'หมวก', 'กระเป๋า', 'Accressories'];
+        $categories = ['เสื้อยืด', 'กางเกง', 'รองเท้า', 'หมวก', 'กระเป๋า', 'Accressories', 'เครื่องประดับ'];
 
         // 2. จำลองสินค้า 12 ชิ้น (สร้างเป็น Object เพื่อให้เรียกใช้ ->name ได้เหมือน DB จริง)
         $products = collect(range(1, 12))->map(function ($i) {
@@ -17,7 +17,7 @@
                 'original_price' => rand(0, 1) ? rand(1600, 3000) : null, // สุ่มราคาเต็ม
                 'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Product+' . $i,
                 'badge' => rand(0, 1) ? 'SALE' : null, // สุ่มป้าย
-                'rating' => rand(3, 5), // สุ่มดาว
+                'rating' => rand(1, 5), // สุ่มดาว
                 'sold' => rand(10, 999), // สุ่มยอดขาย
             ];
         });
@@ -38,12 +38,7 @@
             {{-- Header & Breadcrumbs --}}
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <h1 class="text-2xl font-bold text-gray-800">สินค้าทั้งหมด</h1>
-                <div class="text-sm breadcrumbs text-gray-500">
-                    {{-- <ul>
-                    <li><a href="/">หน้าแรก</a></li>
-                    <li>สินค้า</li>
-                </ul> --}}
-                </div>
+                <div class="text-sm breadcrumbs text-gray-500"></div>
             </div>
 
             <div class="flex flex-col lg:flex-row gap-8">
