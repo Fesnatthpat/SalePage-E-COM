@@ -2,17 +2,14 @@
 
 @section('content')
 
-    {{-- ================= HERO SECTION (คงเดิม) ================= --}}
+    {{-- HERO SECTION --}}
     <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
-        {{-- Background Image --}}
         <div class="absolute inset-0">
             <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop"
                 class="w-full h-full object-cover opacity-60 hover:scale-105 transition-transform duration-1000 ease-in-out"
                 alt="Sale Background">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         </div>
-
-        {{-- Content --}}
         <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
             <span
                 class="inline-block py-1 px-3 rounded-full bg-red-600 text-white text-xs font-bold tracking-widest mb-4 animate-bounce">
@@ -20,7 +17,8 @@
             </span>
             <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                 <span class="block text-gray-300 text-2xl md:text-3xl font-light mb-2">สมาชิกช้อปสินค้า</span>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">SALE</span> ก่อนใคร
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">SALE</span>
+                ก่อนใคร
             </h1>
             <p class="text-gray-200 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed font-light">
                 ลดสูงสุด <span class="text-yellow-400 font-bold text-xl">50%</span> | ที่ร้านและออนไลน์ <br
@@ -45,7 +43,7 @@
         </div>
     </div>
 
-    {{-- ================= SERVICE BAR (คงเดิม) ================= --}}
+    {{-- SERVICE BAR --}}
     <div class="bg-white border-b border-gray-100 py-6">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
@@ -87,9 +85,8 @@
         </div>
     </div>
 
-    {{-- ================= PRODUCTS SECTION (แก้ไขใหม่) ================= --}}
+    {{-- PRODUCTS SECTION --}}
     <div class="container mx-auto px-4 mt-12 mb-20">
-        {{-- Section Header --}}
         <div class="flex justify-between items-end mb-8">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900">สินค้าแนะนำ</h2>
@@ -98,30 +95,40 @@
             <a href="/allproducts" class="text-emerald-600 font-bold hover:underline hidden md:block">ดูทั้งหมด →</a>
         </div>
 
-        {{-- Product Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
+                    {{-- 
+                       [CALCULATION ZONE]
+                       คำนวณค่าตัวแปรไว้ตรงนี้ เพื่อความชัวร์ของเงื่อนไข 
+                    --}}
+                    @php
+                        // แปลงค่าเป็นตัวเลขทศนิยม (float) ป้องกัน error เรื่อง string
+                        $normalPrice = (float) $product->pd_price;
+                        $salePrice = isset($product->prom_price_total) ? (float) $product->prom_price_total : 0;
+
+                        // สร้างเงื่อนไข: "มีราคาโปร" และ "ราคาโปรต้องน้อยกว่าราคาปกติ"
+                        $isOnSale = $salePrice > 0 && $salePrice < $normalPrice;
+                    @endphp
+
                     <div
                         class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
 
-                        {{-- ลิงก์ไปหน้าสินค้า --}}
+                        {{-- รูปภาพ --}}
                         <a href="{{ url('/product/' . $product->pd_id) }}">
                             <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                                {{-- รูปภาพ --}}
                                 <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}"
                                     alt="{{ $product->pd_name }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
 
-                                {{-- ป้าย SALE (เช็คจาก promotion_price) --}}
-                                @if (isset($product->promotion_price) && $product->promotion_price < $product->pd_price)
+                                {{-- Logic ป้าย SALE --}}
+                                @if ($isOnSale)
                                     <div
                                         class="absolute top-2 left-2 badge badge-error text-white gap-1 text-xs font-bold shadow-sm">
                                         SALE
                                     </div>
                                 @endif
 
-                                {{-- ปุ่มดูรายละเอียด --}}
                                 <div
                                     class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
                                     <a href="{{ url('/product/' . $product->pd_id) }}"
@@ -132,8 +139,11 @@
                             </figure>
                         </a>
 
-                        {{-- รายละเอียดสินค้า --}}
+                        {{-- รายละเอียด --}}
                         <div class="card-body p-4">
+                            {{-- หมวดหมู่ (Mockup เพื่อความสวยงาม) --}}
+                            <div class="text-xs text-gray-400 mb-1">สินค้าทั่วไป</div>
+
                             <h2
                                 class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
                                 <a href="{{ url('/product/' . $product->pd_id) }}"
@@ -142,19 +152,22 @@
                                 </a>
                             </h2>
 
-                            {{-- ส่วนแสดงราคา (แบบใหม่) --}}
                             <div class="flex justify-between items-end mt-2">
-                                <div class="flex flex-col">
-                                    {{-- ถ้ามีโปรโมชั่น และ ราคาโปรถูกกว่า --}}
-                                    @if (isset($product->prom_price) && $product->prom_price < $product->pd_price)
+                                {{-- ส่วนที่แก้ไข: ปรับเป็นแนวนอนและสลับตำแหน่ง --}}
+                                <div class="flex items-baseline gap-2">
+                                    {{-- Logic แสดงราคา (ใช้ตัวแปรที่คำนวณไว้ด้านบน) --}}
+                                    @if ($isOnSale)
+                                        {{-- 1. ราคาเต็ม (ขีดฆ่า) อยู่ด้านซ้าย --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($product->prom_price_total) }}</span>
+                                            class="text-xs text-gray-400 line-through">฿{{ number_format($normalPrice) }}</span>
+
+                                        {{-- 2. ราคาลด (ตัวหนา) อยู่ด้านขวา --}}
                                         <span
-                                            class="text-xs text-gray-400 line-through">฿{{ number_format($product->pd_price) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($salePrice) }}</span>
                                     @else
-                                        {{-- ถ้าไม่มีโปร --}}
+                                        {{-- ราคาปกติ (กรณีไม่มีโปร หรือราคาเท่ากัน) --}}
                                         <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($product->pd_price) }}</span>
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($normalPrice) }}</span>
                                     @endif
                                 </div>
                             </div>
