@@ -1,55 +1,8 @@
 @extends('layout')
 
 @section('content')
-    {{-- ================= MOCK DATA (ข้อมูลจำลองสินค้าแนะนำ) ================= --}}
-    @php
-        $recommendedProducts = [
-            [
-                'name' => 'Oversize Cotton 100% (สีครีม)',
-                'category' => 'เสื้อยืด',
-                'price' => 390,
-                'original_price' => 1290,
-                'image' => '/images/T-Shirt-1.png',
-                'badge' => 'HOT',
-                'badge_color' => 'badge-error',
-                'rating' => 4,
-            ],
-            [
-                'name' => 'Oversize Cotton 100% (สีดำ)',
-                'category' => 'เสื้อยืด',
-                'price' => 390,
-                'original_price' => 2500,
-                'image' => '/images/T-Shirt-B.png',
-                'badge' => null,
-                'badge_color' => null,
-                'rating' => 5,
-            ],
-            [
-                'name' => 'กางเกงคาร์โก้ Streetwear',
-                'category' => 'กางเกง',
-                'price' => 590,
-                'original_price' => null,
-                'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Pants',
-                'badge' => 'New',
-                'badge_color' => 'badge-accent',
-                'rating' => 1, // ไม่มีดาว ให้โชว์ยอดขายแทน
-                'sales' => '1.2พัน',
-            ],
-            [
-                'name' => 'หมวกแก๊ป Minimal Style',
-                'category' => 'หมวก',
-                'price' => 150,
-                'original_price' => 300,
-                'image' => 'https://placehold.co/400x500/eaeaea/a0a0a0?text=Cap',
-                'badge' => '-50%',
-                'badge_color' => 'badge-warning',
-                'rating' => 5,
-                'sales' => null,
-            ],
-        ];
-    @endphp
 
-    {{-- ================= HERO SECTION ================= --}}
+    {{-- ================= HERO SECTION (คงเดิม) ================= --}}
     <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
         {{-- Background Image --}}
         <div class="absolute inset-0">
@@ -75,7 +28,7 @@
                 เฉพาะสินค้าที่ร่วมรายการ จนกว่าสินค้าจะหมด
             </p>
             <div class="flex flex-col sm:flex-row gap-4">
-                <a href="/products"
+                <a href="/allproducts"
                     class="btn bg-white text-gray-900 border-none hover:bg-gray-200 px-8 py-3 rounded-full font-bold text-lg transition-transform hover:-translate-y-1 shadow-lg">
                     ช้อปสินค้าลดราคา
                 </a>
@@ -92,7 +45,7 @@
         </div>
     </div>
 
-    {{-- ================= SERVICE BAR ================= --}}
+    {{-- ================= SERVICE BAR (คงเดิม) ================= --}}
     <div class="bg-white border-b border-gray-100 py-6">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
@@ -134,7 +87,7 @@
         </div>
     </div>
 
-    {{-- ================= PRODUCTS SECTION (ปรับปรุงใหม่) ================= --}}
+    {{-- ================= PRODUCTS SECTION (แก้ไขใหม่) ================= --}}
     <div class="container mx-auto px-4 mt-12 mb-20">
         {{-- Section Header --}}
         <div class="flex justify-between items-end mb-8">
@@ -147,71 +100,74 @@
 
         {{-- Product Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            @foreach ($recommendedProducts as $product)
-                <div
-                    class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+            @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
+                @foreach ($recommendedProducts as $product)
+                    <div
+                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
 
-                    {{-- รูปภาพ --}}
-                    <a href="/product">
-                        <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
-                            <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}"
-                                class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        {{-- ลิงก์ไปหน้าสินค้า --}}
+                        <a href="{{ url('/product/' . $product->pd_id) }}">
+                            <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
+                                {{-- รูปภาพ --}}
+                                <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}"
+                                    alt="{{ $product->pd_name }}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
 
-                            {{-- ป้าย Badge --}}
-                            @if ($product['badge'])
-                                <div
-                                    class="absolute top-2 left-2 badge {{ $product['badge_color'] }} text-white gap-1 text-xs font-bold shadow-sm">
-                                    {{ $product['badge'] }}
-                                </div>
-                            @endif
-
-                            {{-- ปุ่มดูรายละเอียด --}}
-                            <div
-                                class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
-                                <a href="/product"
-                                    class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
-                                    ดูรายละเอียด
-                                </a>
-                            </div>
-                        </figure>
-                    </a>
-
-                    {{-- รายละเอียด --}}
-                    <div class="card-body p-4">
-                        <div class="text-xs text-gray-400 mb-1">{{ $product['category'] }}</div>
-                        <h2
-                            class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
-                            <a href="/product" class="hover:text-emerald-600 transition">{{ $product['name'] }}</a>
-                        </h2>
-
-                        <div class="flex justify-between items-end mt-2">
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-lg font-bold text-emerald-600">฿{{ number_format($product['price']) }}</span>
-                                @if ($product['original_price'])
-                                    <span
-                                        class="text-xs text-gray-400 line-through">฿{{ number_format($product['original_price']) }}</span>
+                                {{-- ป้าย SALE (เช็คจาก promotion_price) --}}
+                                @if (isset($product->promotion_price) && $product->promotion_price < $product->pd_price)
+                                    <div
+                                        class="absolute top-2 left-2 badge badge-error text-white gap-1 text-xs font-bold shadow-sm">
+                                        SALE
+                                    </div>
                                 @endif
-                            </div>
 
-                            {{-- ดาว หรือ ยอดขาย --}}
-                            @if (isset($product['rating']) && $product['rating'])
-                                <div class="rating rating-xs disabled">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <input type="radio"
-                                            class="mask mask-star-2 {{ $i <= $product['rating'] ? 'bg-orange-400' : 'bg-gray-200' }}" />
-                                    @endfor
+                                {{-- ปุ่มดูรายละเอียด --}}
+                                <div
+                                    class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
+                                    <a href="{{ url('/product/' . $product->pd_id) }}"
+                                        class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
+                                        ดูรายละเอียด
+                                    </a>
                                 </div>
-                            @elseif(isset($product['sales']))
-                                <span class="text-xs text-gray-400">ขายแล้ว {{ $product['sales'] }}</span>
-                            @endif
+                            </figure>
+                        </a>
+
+                        {{-- รายละเอียดสินค้า --}}
+                        <div class="card-body p-4">
+                            <h2
+                                class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
+                                <a href="{{ url('/product/' . $product->pd_id) }}"
+                                    class="hover:text-emerald-600 transition">
+                                    {{ $product->pd_name }}
+                                </a>
+                            </h2>
+
+                            {{-- ส่วนแสดงราคา (แบบใหม่) --}}
+                            <div class="flex justify-between items-end mt-2">
+                                <div class="flex flex-col">
+                                    {{-- ถ้ามีโปรโมชั่น และ ราคาโปรถูกกว่า --}}
+                                    @if (isset($product->prom_price) && $product->prom_price < $product->pd_price)
+                                        <span
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($product->prom_price_total) }}</span>
+                                        <span
+                                            class="text-xs text-gray-400 line-through">฿{{ number_format($product->pd_price) }}</span>
+                                    @else
+                                        {{-- ถ้าไม่มีโปร --}}
+                                        <span
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($product->pd_price) }}</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
+                @endforeach
+            @else
+                <div class="col-span-full text-center py-10">
+                    <p class="text-gray-500">ไม่พบสินค้าแนะนำในขณะนี้</p>
                 </div>
-            @endforeach
+            @endif
         </div>
 
-        {{-- Mobile View All Button --}}
         <div class="mt-8 text-center md:hidden">
             <a href="/allproducts" class="btn btn-outline w-full">ดูสินค้าทั้งหมด</a>
         </div>
