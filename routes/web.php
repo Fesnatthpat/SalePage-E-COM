@@ -1,16 +1,14 @@
 <?php
 
-use App\Http\Controllers\AddressController;
-use App\Http\Controllers\AllProductController;
-// Import Controllers ทั้งหมดที่ใช้
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AllProductController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AddressController;
+use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,67 +16,68 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// --- 1. หน้าแรก (Home) ---
+// --- 1. หน้าแรก ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// --- 2. หน้าแสดงสินค้าทั้งหมด (All Products) ---
+// --- 2. สินค้า ---
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
-// --- 4. หน้าตะกร้าสินค้า (Cart) ---
+// --- 3. ตะกร้าสินค้า (Cart) ---
+// หน้าแสดงตะกร้า
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+// เพิ่มสินค้าลงตะกร้า
+Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+// เพิ่ม/ลด จำนวนสินค้า
+Route::get('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
+// ลบสินค้า
+Route::get('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
-// --- 5. ระบบสมาชิก (Authentication) ---
+
+// --- 4. ระบบสมาชิก ---
 Route::get('/login', function () {
     if (Auth::check()) {
         return redirect('/');
     }
-
     return view('login');
 })->name('login');
 
-// LINE Login
 Route::get('/login/line', [AuthController::class, 'redirectToLine'])->name('login.line');
 Route::get('/callback/line', [AuthController::class, 'handleLineCallback']);
 
-// Logout
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-
     return redirect('/');
 })->name('logout');
 
-// --- 6. หน้า Static ทั่วไป (เมนูอื่นๆ) ---
-Route::get('/ordertracking', function () {
-    return view('ordertracking');
-});
-Route::get('/orderhistory', function () {
-    return view('orderhistory');
-});
-Route::get('/profile', function () {
-    return view('profile');
-});
 
-// --- 7. Route ที่ต้อง Login เท่านั้น (Protected Routes) ---
+// --- 5. Route ที่ต้อง Login ---
 Route::middleware(['auth'])->group(function () {
-
-    // จัดการที่อยู่ (Address)
+    // Address
     Route::get('/payment', [AddressController::class, 'index'])->name('payment');
     Route::post('/update-address', [AddressController::class, 'saveAddress'])->name('address.save');
     Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
     Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
 
-    // จัดการตะกร้า (Add/Remove)
-    Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-    Route::delete('/remove-from-cart', [CartController::class, 'remove'])->name('cart.remove');
-
-    // สั่งซื้อ (Order)
-    Route::post('/place-order', [OrderController::class, 'placeOrder'])->name('order.place');
-    Route::get('/payment/qr/{order_id}', [OrderController::class, 'showQr'])->name('payment.qr');
+    // Order
+    // Route::post('/place-order', [OrderController::class, 'placeOrder'])->name('order.place');
+    // Route::get('/payment/qr/{order_id}', [OrderController::class, 'showQr'])->name('payment.qr');
 });
 
-// --- 8. API สำหรับดึงข้อมูลที่อยู่ (อำเภอ/ตำบล) ---
+// --- API ---
+Route::get('/qr', function () {
+    return view('qr');
+});
+
+Route::get('/orderhistory', function () {
+    return view('orderhistory');
+});
+
+Route::get('/ordertracking', function () {
+    return view('ordertracking');
+});
+
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
-Route::get('/api/tambons/{amphure_id}', [AddressController::class, 'getTambons']);
+Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);

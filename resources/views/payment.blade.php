@@ -459,25 +459,23 @@
                 amphures: [],
                 districts: [],
 
-                // ฟังก์ชันพิเศษ: โหลดข้อมูลอำเภอ/ตำบลมารอก่อน แล้วค่อยเลือกค่า (สำหรับหน้าแก้ไข)
                 loadEditData(provinceId, amphureId, districtId) {
                     this.selectedProvince = provinceId;
 
-                    // 1. ดึงข้อมูลอำเภอ
                     fetch(`/api/amphures/${provinceId}`)
                         .then(response => response.json())
                         .then(data => {
-                            this.amphures = data;
-                            // ข้อมูลมาแล้ว -> เลือกอำเภอ
+                            // แก้ไข: รองรับกรณีมี key 'data' หรือไม่มี
+                            this.amphures = Array.isArray(data) ? data : (data.data || []); 
+                            
                             this.selectedAmphure = amphureId;
 
-                            // 2. ดึงข้อมูลตำบล (ถ้ามีอำเภอ)
                             if (amphureId) {
                                 fetch(`/api/districts/${amphureId}`)
                                     .then(response => response.json())
                                     .then(data => {
-                                        this.districts = data;
-                                        // ข้อมูลมาแล้ว -> เลือกตำบล
+                                        // แก้ไข: รองรับกรณีมี key 'data' หรือไม่มี
+                                        this.districts = Array.isArray(data) ? data : (data.data || []);
                                         this.selectedDistrict = districtId;
                                     });
                             }
@@ -485,6 +483,7 @@
                 },
 
                 fetchAmphures() {
+                    // console.log('Fetching Amphures for Province:', this.selectedProvince);
                     this.selectedAmphure = '';
                     this.selectedDistrict = '';
                     this.amphures = [];
@@ -494,13 +493,16 @@
                         fetch(`/api/amphures/${this.selectedProvince}`)
                             .then(response => response.json())
                             .then(data => {
-                                this.amphures = data;
+                                // console.log('Amphures Data:', data);
+                                // แก้ไข: เช็คว่า data เป็น Array หรือไม่ ถ้าไม่ใช่ให้ลองดูที่ data.data
+                                this.amphures = Array.isArray(data) ? data : (data.data || []);
                             })
                             .catch(error => console.error('Error fetching amphures:', error));
                     }
                 },
 
                 fetchDistricts() {
+                    // console.log('Fetching Districts for Amphure:', this.selectedAmphure);
                     this.selectedDistrict = '';
                     this.districts = [];
 
@@ -508,7 +510,9 @@
                         fetch(`/api/districts/${this.selectedAmphure}`)
                             .then(response => response.json())
                             .then(data => {
-                                this.districts = data;
+                                // console.log('Districts Data:', data);
+                                // แก้ไข: เช็คว่า data เป็น Array หรือไม่ ถ้าไม่ใช่ให้ลองดูที่ data.data
+                                this.districts = Array.isArray(data) ? data : (data.data || []);
                             })
                             .catch(error => console.error('Error fetching districts:', error));
                     }
@@ -516,6 +520,7 @@
 
                 getZipCode() {
                     if (!this.selectedDistrict || this.districts.length === 0) return '';
+                    // แปลง type ให้ตรงกัน (เผื่อ ID เป็น string/number)
                     const district = this.districts.find(d => d.id == this.selectedDistrict);
                     return district ? (district.zip_code || district.zipcode) : '';
                 }

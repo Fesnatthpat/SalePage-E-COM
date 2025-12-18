@@ -59,19 +59,31 @@
                         </h2>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    {{-- [แก้ไขใหม่] ใช้ Form แทน Link เพื่อส่งค่า quantity --}}
+                    <form action="{{ route('cart.add', ['id' => $product->pd_id]) }}" method="GET"
+                        class="flex flex-col sm:flex-row gap-3 pt-2">
+
                         <div class="flex items-center border border-gray-300 rounded h-12 w-full sm:w-32 bg-white">
-                            <button @click="quantity > 1 ? quantity-- : null"
+                            {{-- ปุ่มลบ (ใส่ type="button" ป้องกันการ Submit) --}}
+                            <button type="button" @click="quantity > 1 ? quantity-- : null"
                                 class="w-10 h-full text-gray-500 hover:bg-gray-100 text-xl font-bold rounded-l">-</button>
-                            <input type="number" x-model="quantity"
+
+                            {{-- ช่องกรอกจำนวน (ใส่ name="quantity") --}}
+                            <input type="number" name="quantity" x-model="quantity"
                                 class="w-full h-full text-center border-none focus:ring-0 text-gray-900 font-bold text-lg m-0"
                                 readonly>
-                            <button @click="quantity++"
+
+                            {{-- ปุ่มบวก (ใส่ type="button") --}}
+                            <button type="button" @click="quantity++"
                                 class="w-10 h-full text-gray-500 hover:bg-gray-100 text-xl font-bold rounded-r">+</button>
                         </div>
-                        <a href="{{ route('cart.add', ['id' => $product->pd_id]) }}"
-                            class="flex-1 btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded h-12 flex items-center justify-center shadow-md transition">เพิ่มลงตะกร้า</a>
-                    </div>
+
+                        {{-- ปุ่ม Submit --}}
+                        <button type="submit"
+                            class="flex-1 btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded h-12 flex items-center justify-center shadow-md transition">
+                            เพิ่มลงตะกร้า
+                        </button>
+                    </form>
                 </div>
 
                 {{-- ส่วนรายละเอียด --}}

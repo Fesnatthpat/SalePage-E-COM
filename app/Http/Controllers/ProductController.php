@@ -20,6 +20,8 @@ class ProductController extends Controller
             ->where('product.pd_id', $id)  
             ->first();
 
+            // dd($product);
+
         if (!$product) {
             return redirect('/')->with('error', 'ไม่พบสินค้านี้');
         }

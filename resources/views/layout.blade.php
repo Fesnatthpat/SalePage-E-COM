@@ -12,6 +12,16 @@
 
 <body class="font-['Noto_Sans_Thai'] bg-[#f9fafb]">
 
+    {{-- [แก้ไข] Logic คำนวณจำนวนสินค้าในตะกร้า --}}
+    @php
+        $cartCount = 0;
+        // ตรวจสอบว่า Login หรือยัง? ถ้า Login แล้วค่อยดึงข้อมูลตะกร้า
+        if (Auth::check()) {
+            $cartSessionId = Auth::id();
+            $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
+        }
+    @endphp
+
     {{-- Navbar Container --}}
     <div class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
         <div class="container mx-auto px-4 md:px-6">
@@ -100,7 +110,8 @@
                 {{-- ================= 3. NAVBAR END (ขวา) ================= --}}
                 <div class="navbar-end flex items-center gap-2 md:gap-4">
 
-                    {{-- Cart Icon --}}
+                    {{-- [แก้ไข] Cart Icon พร้อมตัวเลขจำนวนสินค้า (Badge) --}}
+                    {{-- ครอบด้วย @auth เพื่อให้แสดงเฉพาะตอนล็อกอิน --}}
                     @auth
                         <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-gray-100">
                             <div class="indicator">
@@ -109,14 +120,17 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                <span class="badge badge-sm indicator-item bg-red-500 text-white border-none">3</span>
+                                @if ($cartCount > 0)
+                                    <span class="badge badge-sm indicator-item bg-red-500 text-white border-none">
+                                        {{ $cartCount }}
+                                    </span>
+                                @endif
                             </div>
                         </a>
                     @endauth
 
                     {{-- Login / User Profile --}}
                     @guest
-                        {{-- ปุ่มเข้าสู่ระบบ (ซ่อนในมือถือ เพราะมีใน Hamburger แล้ว) --}}
                         <a href="/login"
                             class="hidden md:flex items-center gap-2 btn bg-[#06C755] hover:bg-[#00B900] text-white border-none px-5 rounded-full shadow-sm hover:shadow-md transition">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -128,7 +142,6 @@
                     @endguest
 
                     @auth
-                        {{-- [แก้ไข] เพิ่ม class "hidden md:block" เพื่อซ่อนรูปโปรไฟล์ในมือถือ --}}
                         <div class="dropdown dropdown-end hidden md:block">
                             <div tabindex="0" role="button"
                                 class="btn btn-ghost btn-circle avatar border border-emerald-200 ring-2 ring-transparent hover:ring-emerald-400 transition">
@@ -195,7 +208,6 @@
     {{-- Footer --}}
     <div class="bg-base-200 text-base-content mt-10">
         <footer class="footer sm:footer-horizontal p-10 container mx-auto">
-            {{-- Column 1 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">ศูนย์ช่วยเหลือ</h6>
                 @auth
@@ -209,7 +221,6 @@
                 <a href="/contactus" class="link link-hover">ติดต่อเรา</a>
             </nav>
 
-            {{-- Column 2 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">เลือกซื้อสินค้า</h6>
                 <a href="#" class="link link-hover">เสื้อยืด Oversize</a>
@@ -219,7 +230,6 @@
                 <a href="#" class="link link-hover text-red-500 font-bold">สินค้าลดราคา</a>
             </nav>
 
-            {{-- Column 3 --}}
             <nav>
                 <h6 class="footer-title text-emerald-600 opacity-100">เกี่ยวกับ H&M-R</h6>
                 <a href="#" class="link link-hover">เรื่องราวของเรา</a>
@@ -228,7 +238,6 @@
                 <a href="#" class="link link-hover">เงื่อนไขการใช้งาน</a>
             </nav>
 
-            {{-- Column 4 --}}
             <form>
                 <h6 class="footer-title text-emerald-600 opacity-100">รับข่าวสารและโปรโมชั่น</h6>
                 <fieldset class="form-control w-80">
@@ -245,7 +254,6 @@
             </form>
         </footer>
 
-        {{-- Footer Bottom --}}
         <footer class="footer bg-base-300 text-base-content border-base-300 border-t px-10 py-4 container mx-auto">
             <aside class="grid-flow-col items-center">
                 <div class="w-10 h-10 grayscale opacity-70">

@@ -12,16 +12,16 @@
                 </div>
 
                 {{-- เช็คว่าตะกร้าว่างไหม --}}
-                @if (session('cart') && count(session('cart')) > 0)
-                    {{-- Loop แสดงรายการสินค้าจาก Session --}}
-                    @foreach (session('cart') as $id => $details)
-                        {{-- คำนวณตัวแปรเบื้องต้นเพื่อความสะอาดของโค้ด --}}
+                @if (!$items->isEmpty())
+                    {{-- Loop แสดงรายการสินค้า --}}
+                    @foreach ($items as $item)
                         @php
-                            $quantity = $details['quantity'];
-                            $price = $details['price'];
-                            $originalPrice = isset($details['original_price']) ? $details['original_price'] : $price;
-
-                            $totalPrice = $price * $quantity;
+                            $quantity = $item->quantity;
+                            $price = $item->price;
+                            $originalPrice = $item->attributes->has('original_price')
+                                ? $item->attributes->original_price
+                                : $price;
+                            $totalPrice = $item->getPriceSum();
                             $totalOriginalPrice = $originalPrice * $quantity;
                             $hasDiscount = $originalPrice > $price;
                         @endphp
@@ -32,14 +32,11 @@
                             {{-- 1. รูปและชื่อสินค้า --}}
                             <div class="flex flex-row gap-4 w-full md:w-auto">
                                 <div class="flex-shrink-0">
-                                    {{-- รูปสินค้า --}}
-                                    <img class="w-20 h-24 md:w-24 md:h-28 object-cover rounded-md border border-gray-100"
-                                        src="{{ $details['image'] }}" alt="{{ $details['name'] }}">
+                                    <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}" ...alt="{{ $item->name }}"
+                                        class="w-20 h-20 object-cover rounded-lg md:w-24 md:h-24" />
                                 </div>
                                 <div class="flex-1 mt-1">
-                                    <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $details['name'] }}</h1>
-                                    {{-- ตัวอย่างแสดง Size/Color (ถ้ามี) --}}
-                                    <p class="text-xs text-gray-500 mt-1">สี: ดำ, ไซส์: L</p>
+                                    <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
                                 </div>
                             </div>
 
@@ -47,10 +44,9 @@
                             <div
                                 class="flex flex-row justify-between items-center md:flex-col md:items-end gap-4 w-full md:w-auto mt-2 md:mt-0">
 
-                                {{-- ส่วนแสดงราคา (อัปเกรดใหม่: รองรับโปรโมชัน) --}}
+                                {{-- ส่วนแสดงราคา --}}
                                 <div class="flex flex-col items-end">
                                     @if ($hasDiscount)
-                                        {{-- กรณีมีส่วนลด --}}
                                         <div class="flex items-center gap-2">
                                             <span
                                                 class="text-sm text-gray-400 line-through">฿{{ number_format($totalOriginalPrice) }}</span>
@@ -58,13 +54,11 @@
                                         <div class="text-2xl font-bold text-red-600">
                                             ฿{{ number_format($totalPrice) }}
                                         </div>
-                                        {{-- ป้ายบอกส่วนลด --}}
                                         <span
                                             class="text-[10px] md:text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full mt-1">
                                             ประหยัด ฿{{ number_format($totalOriginalPrice - $totalPrice) }}
                                         </span>
                                     @else
-                                        {{-- กรณีราคาปกติ --}}
                                         <div class="text-2xl font-bold text-gray-900">
                                             ฿{{ number_format($totalPrice) }}
                                         </div>
@@ -75,41 +69,36 @@
                                 <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
 
                                     {{-- กล่องแสดงจำนวน --}}
-                                    <div
-                                        class="flex items-center border border-gray-300 rounded h-10 md:h-12 w-32 md:w-36 bg-white px-3 justify-center">
-                                        <span class="font-bold text-gray-700 text-sm md:text-base">จำนวน:
-                                            {{ $quantity }}</span>
+                                    <div class="flex items-center border border-gray-300 rounded h-10 md:h-12 bg-white">
+                                        <a href="{{ route('cart.update', ['id' => $item->id, 'action' => 'decrease']) }}"
+                                            class="px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg">-</a>
+
+                                        <span class="font-bold text-gray-700 text-sm md:text-base w-12 text-center">
+                                            {{ $quantity }}
+                                        </span>
+
+                                        <a href="{{ route('cart.update', ['id' => $item->id, 'action' => 'increase']) }}"
+                                            class="px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg">+</a>
                                     </div>
 
                                     {{-- ปุ่มลบสินค้า --}}
-                                    <form action="{{ route('cart.remove') }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="id" value="{{ $id }}">
-                                        <button type="submit"
-                                            class="text-red-500 hover:text-red-700 font-medium text-sm md:text-base underline md:no-underline md:btn md:btn-ghost md:btn-sm md:text-red-500">
-                                            ลบรายการ
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('cart.remove', $item->id) }}"
+                                        class="text-red-500 hover:text-red-700 font-medium text-sm md:text-base underline md:no-underline md:btn md:btn-ghost md:btn-sm md:text-red-500">
+                                        ลบรายการ
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     @endforeach
 
-                    {{-- Footer Section (สรุปยอด) --}}
+                    {{-- Footer Section --}}
                     <div class="flex flex-col lg:flex-row justify-end gap-5 mt-10">
-                        <div class="w-full lg:w-[400px]"> {{-- ปรับขนาดกล่องสรุปให้กระชับขึ้น --}}
-
-                            {{-- ยอดรวมย่อย --}}
+                        <div class="w-full lg:w-[400px]">
                             <div class="flex justify-between mt-5 text-base text-gray-600">
                                 <div>ยอดรวมสินค้า</div>
                                 <div class="font-medium">฿{{ number_format($total) }}</div>
                             </div>
-
-                            {{-- เส้นกั้น --}}
                             <div class="border-t border-gray-200 my-4"></div>
-
-                            {{-- ยอดรวมทั้งสิ้น --}}
                             <div class="flex justify-between items-center mb-6">
                                 <div>
                                     <h1 class="font-bold text-xl md:text-2xl text-gray-800">ยอดรวมทั้งสิ้น</h1>
@@ -121,8 +110,6 @@
                                     </h1>
                                 </div>
                             </div>
-
-                            {{-- ปุ่ม Action --}}
                             <div class="flex flex-col gap-3">
                                 @auth
                                     <a href="/payment"
@@ -149,7 +136,6 @@
                         <a href="/allproducts" class="btn btn-primary text-white px-8">ไปเลือกซื้อสินค้า</a>
                     </div>
                 @endif
-
             </div>
         </div>
     </div>

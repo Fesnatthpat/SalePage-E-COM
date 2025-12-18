@@ -99,8 +99,8 @@
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
                     {{-- 
-                       [CALCULATION ZONE]
-                       คำนวณค่าตัวแปรไว้ตรงนี้ เพื่อความชัวร์ของเงื่อนไข 
+                        [CALCULATION ZONE]
+                        คำนวณค่าตัวแปรไว้ตรงนี้ เพื่อความชัวร์ของเงื่อนไข 
                     --}}
                     @php
                         // แปลงค่าเป็นตัวเลขทศนิยม (float) ป้องกัน error เรื่อง string

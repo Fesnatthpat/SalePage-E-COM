@@ -15,7 +15,8 @@ class AllProductController extends Controller
                 'product.pd_name',
                 'product.pd_price',
                 'product.pd_img',
-                'promotion.prom_price_total'
+                'promotion.prom_price_total',
+                // ''
             )
             ->join('product', 'product_salepage.pd_id', '=', 'product.pd_id')
             ->leftJoin('promotion', 'product.pd_id', '=', 'promotion.promotion_id')

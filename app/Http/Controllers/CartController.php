@@ -2,47 +2,125 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CartStorage;
+use App\Models\Product;
+use Darryldecode\Cart\Facades\CartFacade as Cart;
+use Illuminate\Support\Facades\Auth;
+
 class CartController extends Controller
 {
-    // ในไฟล์ app/Http/Controllers/CartController.php
+    // Helper: ดึง User ID
+    private function getUserId()
+    {
+        return Auth::check() ? Auth::id() : '_guest_'.session()->getId();
+    }
 
+    // Helper: บันทึก Cart ลง DB
+    private function saveCartToDatabase()
+    {
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $cartData = Cart::session($userId)->getContent();
+
+            CartStorage::updateOrCreate(
+                ['user_id' => $userId],
+                ['cart_data' => serialize($cartData)]
+            );
+        }
+    }
+
+    // Helper: Restore Cart จาก DB
+    public function restoreCartFromDatabase()
+    {
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $savedCart = CartStorage::where('user_id', $userId)->first();
+
+            if ($savedCart) {
+                // [สำคัญ] ต้องเคลียร์ Session ปัจจุบันทิ้งก่อนรับค่าจาก DB
+                Cart::session($userId)->clear();
+
+                $items = unserialize($savedCart->cart_data);
+                foreach ($items as $item) {
+                    Cart::session($userId)->add($item->toArray());
+                }
+            }
+        }
+    }
+
+    // แสดงหน้าตะกร้า
     public function index()
     {
-        // 1. จำลองข้อมูล (Mock Data) ถ้ายังไม่มีสินค้าในตะกร้า
-        if (! session()->has('cart')) {
-            $mockCart = [
-                1 => [
-                    'name' => 'เสื้อยืด Oversize (สีดำ)',
-                    'quantity' => 1,
-                    'price' => 250,          // ราคาขายจริง (ลดแล้ว)
-                    'original_price' => 450, // ราคาเต็ม (เพื่อโชว์ส่วนลด)
-                    'image' => 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=200&q=80',
-                ],
-                2 => [
-                    'name' => 'กางเกงยีนส์ ทรงกระบอก',
-                    'quantity' => 2,
-                    'price' => 590,          // ราคาปกติ (ไม่มีส่วนลด)
-                    'original_price' => 590, // ราคาเต็มเท่ากับราคาขาย
-                    'image' => 'https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?auto=format&fit=crop&w=200&q=80',
-                ],
-                3 => [
-                    'name' => 'รองเท้าผ้าใบ Sneaker (Limited)',
-                    'quantity' => 1,
-                    'price' => 1290,         // ราคาขายจริง (ลดแล้ว)
-                    'original_price' => 2500, // ราคาเต็ม (ลดเยอะมาก)
-                    'image' => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=200&q=80',
-                ],
-            ];
-            session()->put('cart', $mockCart);
+        $userId = $this->getUserId();
+
+        // โหลดข้อมูลล่าสุดจาก DB เสมอ เพื่อให้มั่นใจว่าข้อมูลตรงกัน
+        if (Auth::check()) {
+            $this->restoreCartFromDatabase();
         }
 
-        // 2. คำนวณยอดรวม (Total) เพื่อส่งไปหน้า View
-        $cart = session()->get('cart');
-        $total = 0;
-        foreach ($cart as $id => $details) {
-            $total += $details['price'] * $details['quantity'];
+        $items = Cart::session($userId)->getContent()->sort();
+        $total = Cart::session($userId)->getTotal();
+
+        return view('cart', compact('items', 'total'));
+    }
+
+    // เพิ่มสินค้า (รองรับจำนวน)
+    public function addToCart($productId)
+    {
+        $product = Product::findOrFail($productId);
+        $userId = $this->getUserId();
+
+        // รับค่าจำนวนจาก Input
+        $qty = request()->input('quantity', 1);
+        $qty = ($qty < 1) ? 1 : $qty;
+
+        $existingItem = Cart::session($userId)->get($productId);
+
+        if ($existingItem) {
+            Cart::session($userId)->update($productId, [
+                'quantity' => $qty,
+            ]);
+        } else {
+            Cart::session($userId)->add([
+                'id' => $productId,
+                'name' => $product->pd_name,
+                'price' => $product->pd_price,
+                'quantity' => $qty,
+                'attributes' => [
+                    // [แก้ไขตรงนี้] เช็คชื่อให้ตรงกับ DB (น่าจะเป็น pd_img)
+                    'image' => $product->pd_img,
+                ],
+                'associatedModel' => $product,
+            ]);
         }
 
-        return view('cart', compact('total'));
+        $this->saveCartToDatabase();
+
+        return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าลงตะกร้าแล้ว');
+    }
+
+    // เพิ่ม/ลด จำนวน (ในหน้าตะกร้า)
+    public function updateQuantity($productId, $action)
+    {
+        $userId = $this->getUserId();
+        $quantity = ($action === 'increase') ? 1 : -1;
+
+        Cart::session($userId)->update($productId, [
+            'quantity' => $quantity,
+        ]);
+
+        $this->saveCartToDatabase();
+
+        return back();
+    }
+
+    // ลบสินค้า
+    public function removeItem($productId)
+    {
+        $userId = $this->getUserId();
+        Cart::session($userId)->remove($productId);
+        $this->saveCartToDatabase();
+
+        return back()->with('success', 'ลบสินค้าเรียบร้อยแล้ว');
     }
 }
