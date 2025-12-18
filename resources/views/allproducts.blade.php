@@ -6,7 +6,7 @@
         <div class="container mx-auto px-4">
 
             {{-- Header --}}
-            
+
 
             <div class="flex flex-col lg:flex-row gap-8">
 
