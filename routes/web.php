@@ -1,14 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\AllProductController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AddressController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AllProductController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\HomeController;
+// use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,12 +33,12 @@ Route::get('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity
 // ลบสินค้า
 Route::get('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
-
 // --- 4. ระบบสมาชิก ---
 Route::get('/login', function () {
     if (Auth::check()) {
         return redirect('/');
     }
+
     return view('login');
 })->name('login');
 
@@ -49,9 +49,9 @@ Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
+
     return redirect('/');
 })->name('logout');
-
 
 // --- 5. Route ที่ต้อง Login ---
 Route::middleware(['auth'])->group(function () {

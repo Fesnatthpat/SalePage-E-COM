@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Province;
 use App\Models\Amphure;
+use App\Models\DeliveryAddress;
 use App\Models\District;
-use App\Models\DeliveryAddress; 
+use App\Models\Province;
+use Illuminate\Http\Request;
 
 class AddressController extends Controller
 {
@@ -15,7 +15,7 @@ class AddressController extends Controller
     {
         // ดึงจังหวัดสำหรับ Dropdown
         $provinces = Province::orderBy('name_th', 'asc')->get();
-        
+
         // ดึงที่อยู่จัดส่งทั้งหมดจาก Database (ล่าสุดขึ้นก่อน)
         $addresses = DeliveryAddress::orderBy('created_at', 'desc')->get();
 
@@ -27,6 +27,7 @@ class AddressController extends Controller
     public function getAmphures($province_id)
     {
         $amphures = Amphure::where('province_id', $province_id)->orderBy('name_th', 'asc')->get();
+
         return response()->json($amphures);
     }
 
@@ -34,6 +35,7 @@ class AddressController extends Controller
     public function getDistricts($amphure_id)
     {
         $districts = District::where('amphure_id', $amphure_id)->orderBy('name_th', 'asc')->get();
+
         return response()->json($districts);
     }
 
@@ -59,7 +61,7 @@ class AddressController extends Controller
             'amphure_id' => $request->amphure_id,
             'district_id' => $request->district_id,
             'zipcode' => $request->zipcode,
-            'note' => $request->note, 
+            'note' => $request->note,
         ]);
 
         return back()->with('success', 'บันทึกที่อยู่จัดส่งเรียบร้อยแล้ว!');

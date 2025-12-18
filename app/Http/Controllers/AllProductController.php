@@ -24,7 +24,7 @@ class AllProductController extends Controller
 
         // ค้นหาชื่อสินค้า
         if ($request->has('search') && $request->search != '') {
-            $query->where('product.pd_name', 'like', '%' . $request->search . '%');
+            $query->where('product.pd_name', 'like', '%'.$request->search.'%');
         }
 
         // เรียงลำดับจากใหม่ไปเก่า

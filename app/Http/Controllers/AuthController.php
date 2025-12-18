@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\CartStorage; // [เพิ่ม] เรียกใช้ Model ตะกร้า
+use App\Models\CartStorage;
+use App\Models\User; // [เพิ่ม] เรียกใช้ Model ตะกร้า
+use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
-use Darryldecode\Cart\Facades\CartFacade as Cart; // [เพิ่ม] เรียกใช้ Cart
+use Laravel\Socialite\Facades\Socialite; // [เพิ่ม] เรียกใช้ Cart
 
 class AuthController extends Controller
 {
@@ -58,6 +58,6 @@ class AuthController extends Controller
         }
         // ============================================================
 
-        return redirect('/'); 
+        return redirect('/');
     }
 }

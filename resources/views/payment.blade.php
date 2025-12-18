@@ -114,7 +114,6 @@
                         </div>
 
                         {{-- ==================== MODAL แก้ไข (แยกตาม ID) ==================== --}}
-                        {{-- ใช้ x-init เรียก loadEditData เพื่อโหลดข้อมูลอำเภอ/ตำบลให้เสร็จก่อนเลือกค่า --}}
                         <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
 
@@ -397,14 +396,42 @@
             </div>
         </dialog>
 
-        {{-- ==================== รายการสินค้า & ชำระเงิน (คงเดิม) ==================== --}}
+        {{-- ==================== [แก้ไขใหม่] รายการสินค้าจริงจากตะกร้า ==================== --}}
         <div class="border border-gray-200 p-5 rounded-lg shadow-sm mb-6 bg-white">
-            <h1 class="font-bold text-xl border-b border-gray-200 pb-4 mb-4 text-gray-800">สั่งซื้อสินค้าแล้ว</h1>
+            <h1 class="font-bold text-xl border-b border-gray-200 pb-4 mb-4 text-gray-800">สรุปการสั่งซื้อ</h1>
             <div class="space-y-4">
-                <p class="text-gray-500 text-center py-4 bg-gray-50 rounded border border-dashed">... รายการสินค้า ...</p>
+                @if (isset($cartItems) && $cartItems->count() > 0)
+                    @foreach ($cartItems as $item)
+                        <div
+                            class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                            <div class="flex items-center gap-4">
+                                {{-- รูปสินค้า --}}
+                                <div
+                                    class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                                    <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}"
+                                        alt="{{ $item->name }}"
+                                        class="w-20 h-20 object-cover rounded-lg md:w-24 md:h-24" />
+                                </div>
+                                {{-- ชื่อและจำนวน --}}
+                                <div>
+                                    <p class="font-bold text-gray-800 line-clamp-1">{{ $item->name }}</p>
+                                    <p class="text-sm text-gray-500">จำนวน: {{ $item->quantity }} ชิ้น</p>
+                                </div>
+                            </div>
+                            {{-- ราคารวมของรายการนี้ --}}
+                            <div class="text-right">
+                                <p class="font-bold text-emerald-600">
+                                    ฿{{ number_format($item->price * $item->quantity) }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-gray-500 text-center py-4">ไม่มีสินค้าในตะกร้า</p>
+                @endif
             </div>
         </div>
 
+        {{-- ==================== [แก้ไขใหม่] ยอดชำระเงินจริง ==================== --}}
         <div class="border border-gray-200 p-5 rounded-lg shadow-sm mb-6 bg-white">
             <h1 class="font-bold text-xl border-b border-gray-200 pb-4 mb-4 text-gray-800">วิธีชำระเงิน</h1>
             <div class="flex flex-col lg:flex-row lg:gap-8">
@@ -428,13 +455,22 @@
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
                         <div class="text-lg font-bold mb-3 border-b border-gray-200 pb-2">สรุปยอดชำระ</div>
                         <div class="space-y-2 text-base">
-                            <div class="flex justify-between"><span class="text-gray-600">รวมการสั่งซื้อ</span><span
-                                    class="text-gray-900 font-medium">$780</span></div>
-                            <div class="flex justify-between"><span class="text-gray-600">การจัดส่ง</span><span
-                                    class="text-gray-900 font-medium">$10</span></div>
-                            <div class="flex justify-between text-green-600"><span>ส่วนลด</span><span>-$50</span></div>
-                            <div class="flex justify-between border-t border-gray-300 pt-3 mt-2 text-lg font-bold"><span
-                                    class="text-gray-800">ยอดชำระทั้งหมด</span><span class="text-red-500">$740</span>
+                            {{-- ยอดรวมสินค้า --}}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">รวมการสั่งซื้อ</span>
+                                <span class="text-gray-900 font-medium">฿{{ number_format($total ?? 0) }}</span>
+                            </div>
+
+                            {{-- ค่าจัดส่ง (ตัวอย่าง: ฟรี) --}}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">การจัดส่ง</span>
+                                <span class="text-gray-900 font-medium text-green-600">ฟรี</span>
+                            </div>
+
+                            {{-- ยอดสุทธิ --}}
+                            <div class="flex justify-between border-t border-gray-300 pt-3 mt-2 text-lg font-bold">
+                                <span class="text-gray-800">ยอดชำระทั้งหมด</span>
+                                <span class="text-red-500">฿{{ number_format($total ?? 0) }}</span>
                             </div>
                         </div>
                     </div>
@@ -449,7 +485,7 @@
 
     </div>
 
-    {{-- Script สำหรับ Dropdown ที่อยู่ (Update ใหม่) --}}
+    {{-- Script สำหรับ Dropdown ที่อยู่ --}}
     <script>
         function addressDropdown() {
             return {
@@ -465,16 +501,13 @@
                     fetch(`/api/amphures/${provinceId}`)
                         .then(response => response.json())
                         .then(data => {
-                            // แก้ไข: รองรับกรณีมี key 'data' หรือไม่มี
-                            this.amphures = Array.isArray(data) ? data : (data.data || []); 
-                            
+                            this.amphures = Array.isArray(data) ? data : (data.data || []);
                             this.selectedAmphure = amphureId;
 
                             if (amphureId) {
                                 fetch(`/api/districts/${amphureId}`)
                                     .then(response => response.json())
                                     .then(data => {
-                                        // แก้ไข: รองรับกรณีมี key 'data' หรือไม่มี
                                         this.districts = Array.isArray(data) ? data : (data.data || []);
                                         this.selectedDistrict = districtId;
                                     });
@@ -483,7 +516,6 @@
                 },
 
                 fetchAmphures() {
-                    // console.log('Fetching Amphures for Province:', this.selectedProvince);
                     this.selectedAmphure = '';
                     this.selectedDistrict = '';
                     this.amphures = [];
@@ -493,8 +525,6 @@
                         fetch(`/api/amphures/${this.selectedProvince}`)
                             .then(response => response.json())
                             .then(data => {
-                                // console.log('Amphures Data:', data);
-                                // แก้ไข: เช็คว่า data เป็น Array หรือไม่ ถ้าไม่ใช่ให้ลองดูที่ data.data
                                 this.amphures = Array.isArray(data) ? data : (data.data || []);
                             })
                             .catch(error => console.error('Error fetching amphures:', error));
@@ -502,7 +532,6 @@
                 },
 
                 fetchDistricts() {
-                    // console.log('Fetching Districts for Amphure:', this.selectedAmphure);
                     this.selectedDistrict = '';
                     this.districts = [];
 
@@ -510,8 +539,6 @@
                         fetch(`/api/districts/${this.selectedAmphure}`)
                             .then(response => response.json())
                             .then(data => {
-                                // console.log('Districts Data:', data);
-                                // แก้ไข: เช็คว่า data เป็น Array หรือไม่ ถ้าไม่ใช่ให้ลองดูที่ data.data
                                 this.districts = Array.isArray(data) ? data : (data.data || []);
                             })
                             .catch(error => console.error('Error fetching districts:', error));
@@ -520,7 +547,6 @@
 
                 getZipCode() {
                     if (!this.selectedDistrict || this.districts.length === 0) return '';
-                    // แปลง type ให้ตรงกัน (เผื่อ ID เป็น string/number)
                     const district = this.districts.find(d => d.id == this.selectedDistrict);
                     return district ? (district.zip_code || district.zipcode) : '';
                 }

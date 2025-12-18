@@ -32,7 +32,8 @@
                             {{-- 1. รูปและชื่อสินค้า --}}
                             <div class="flex flex-row gap-4 w-full md:w-auto">
                                 <div class="flex-shrink-0">
-                                    <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}" ...alt="{{ $item->name }}"
+                                    <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}"
+                                        alt="{{ $item->name }}"
                                         class="w-20 h-20 object-cover rounded-lg md:w-24 md:h-24" />
                                 </div>
                                 <div class="flex-1 mt-1">

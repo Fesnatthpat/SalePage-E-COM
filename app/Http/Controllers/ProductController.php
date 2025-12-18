@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -11,18 +10,18 @@ class ProductController extends Controller
     {
         $product = DB::table('product')
             ->select(
-                'product.*',               
-                'brand.brand_name',        
+                'product.*',
+                'brand.brand_name',
                 'promotion.prom_price_total'
             )
             ->leftJoin('promotion', 'product.pd_id', '=', 'promotion.promotion_id')
             ->leftJoin('brand', 'product.brand_id', '=', 'brand.brand_id')
-            ->where('product.pd_id', $id)  
+            ->where('product.pd_id', $id)
             ->first();
 
-            // dd($product);
+        // dd($product);
 
-        if (!$product) {
+        if (! $product) {
             return redirect('/')->with('error', 'ไม่พบสินค้านี้');
         }
 

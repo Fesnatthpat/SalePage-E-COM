@@ -18,7 +18,7 @@
                 </div>
                 <div class="">
                     <p class="text-gray-600">เวลาที่เหลือในการชำระเงิน</p>
-                    <p class="text-gray-600">รหัสคำสั่งซื้อ:  #ORD-2568001</p>
+                    <p class="text-gray-600">รหัสคำสั่งซื้อ: #ORD-2568001</p>
                 </div>
             </div>
             <h1 class="font-bold text-2xl mb-4">สแกน QR เพื่อชำระเงิน</h1>

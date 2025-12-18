@@ -166,7 +166,7 @@
                                     </div>
                                 </li>
                                 <li>
-                                    <a href="/profile"
+                                    {{-- <a href="/profile"
                                         class="py-3 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 active:bg-emerald-100 rounded-lg transition-colors duration-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
@@ -174,7 +174,7 @@
                                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                         <span class="font-medium">ข้อมูลส่วนตัว</span>
-                                    </a>
+                                    </a> --}}
                                 </li>
                                 <div class="divider my-1 before:bg-gray-100 after:bg-gray-100"></div>
                                 <li>
