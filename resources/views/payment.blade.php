@@ -2,6 +2,18 @@
 
 @section('content')
     <div class="container mx-auto p-4 lg:p-8">
+
+        {{-- ★★★ [แก้ไข 1] คำนวณยอดรวมใหม่จากรายการสินค้าจริง เพื่อความแม่นยำ 100% ★★★ --}}
+        @php
+            $grandTotal = 0;
+            if (isset($cartItems)) {
+                foreach ($cartItems as $item) {
+                    // $item->price คือราคาที่ลดแล้ว (จาก CartController)
+                    $grandTotal += $item->price * $item->quantity;
+                }
+            }
+        @endphp
+
         {{-- ==================== 1. ส่วนที่อยู่ (Address Section) ==================== --}}
         <div class="border border-gray-200 p-5 rounded-lg shadow-sm mb-6 bg-white">
             <div class="mb-4 border-b border-gray-100 pb-2 flex justify-between items-center">
@@ -63,7 +75,8 @@
                                     @if ($address->note)
                                         <p
                                             class="text-orange-600 text-xs mt-2 bg-orange-50 p-2 rounded border border-orange-100 inline-block">
-                                            <span class="font-bold w-full ">หมายเหตุ:</span> {{ $address->note }}</p>
+                                            <span class="font-bold w-full ">หมายเหตุ:</span> {{ $address->note }}
+                                        </p>
                                     @endif
                                 </div>
                                 <div class="flex flex-wrap items-center gap-2 mt-2 pt-3 border-t border-gray-100">
@@ -86,7 +99,7 @@
                             </div>
                         </div>
 
-                        {{-- Modal Edit (คงเดิม) --}}
+                        {{-- Modal Edit --}}
                         <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
                             <div
@@ -100,7 +113,6 @@
                                     <form action="{{ route('address.update', $address->id) }}" method="POST"
                                         class="flex flex-col gap-6">
                                         @csrf @method('PUT')
-                                        {{-- เนื้อหา Form Edit (ย่อ) --}}
                                         <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                                             <h4
                                                 class="text-sm font-bold text-emerald-600 uppercase mb-4 tracking-wide border-b pb-2">
@@ -213,7 +225,7 @@
             </div>
         </div>
 
-        {{-- Modal Add New (คงเดิม) --}}
+        {{-- Modal Add New --}}
         <dialog id="modal_add_new" class="modal modal-middle" x-data="addressDropdown()">
             <div class="modal-box w-11/12 max-w-4xl p-0 overflow-hidden bg-gray-50 flex flex-col max-h-[90vh]">
                 <div class="bg-white px-6 py-4 border-b flex justify-between items-center sticky top-0 z-10 flex-shrink-0">
@@ -223,7 +235,6 @@
                 <div class="p-6 overflow-y-auto flex-grow">
                     <form action="/update-address" method="POST" class="flex flex-col gap-6" id="addressForm">
                         @csrf
-                        {{-- เนื้อหา Form Add (เหมือนเดิม) --}}
                         <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
                             <h4 class="text-sm font-bold text-emerald-600 uppercase mb-4 tracking-wide border-b pb-2">1.
                                 ข้อมูลผู้รับ</h4>
@@ -315,13 +326,29 @@
             </div>
         </dialog>
 
-        {{-- ==================== [แก้ไขใหม่] รายการสินค้าจริงจากตะกร้า ==================== --}}
-        {{-- Loop นี้จะแสดงเฉพาะสินค้าที่ Controller กรองมาให้แล้ว ($cartItems) --}}
+        {{-- ==================== 2. ส่วนสรุปการสั่งซื้อ (Order Summary Section) ==================== --}}
         <div class="border border-gray-200 p-5 rounded-lg shadow-sm mb-6 bg-white">
             <h1 class="font-bold text-xl border-b border-gray-200 pb-4 mb-4 text-gray-800">สรุปการสั่งซื้อ</h1>
             <div class="space-y-4">
                 @if (isset($cartItems) && $cartItems->count() > 0)
                     @foreach ($cartItems as $item)
+                        @php
+                            // ดึงข้อมูลราคามาคำนวณ
+                            $quantity = $item->quantity;
+                            $price = $item->price; // ราคาขายจริง (ลดแล้ว)
+
+                            // ดึงราคาเต็มจาก attributes (ถ้าไม่มีให้ใช้ราคา price ปกติ)
+                            $originalPrice = $item->attributes->has('original_price')
+                                ? $item->attributes->original_price
+                                : $price;
+
+                            $totalPrice = $item->getPriceSum(); // ราคารวมที่ลดแล้ว
+                            $totalOriginalPrice = $originalPrice * $quantity; // ราคาเต็มรวม
+
+                            // เช็คว่ามีส่วนลดหรือไม่
+                            $hasDiscount = $totalOriginalPrice > $totalPrice;
+                        @endphp
+
                         <div
                             class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                             <div class="flex items-center gap-4">
@@ -337,9 +364,18 @@
                                     <p class="text-sm text-gray-500">จำนวน: {{ $item->quantity }} ชิ้น</p>
                                 </div>
                             </div>
-                            {{-- ราคารวมของรายการนี้ (Price * Quantity) --}}
+
+                            {{-- ★★★ [แก้ไข 2] ส่วนแสดงราคาในลิสต์ ★★★ --}}
                             <div class="text-right">
-                                <p class="font-bold text-emerald-600">฿{{ number_format($item->getPriceSum()) }}</p>
+                                @if ($hasDiscount)
+                                    {{-- กรณีมีส่วนลด: แสดงราคาลด (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
+                                    <p class="font-bold text-emerald-600">฿{{ number_format($totalPrice) }}</p>
+                                    <p class="text-xs text-gray-400 line-through">
+                                        ฿{{ number_format($totalOriginalPrice) }}</p>
+                                @else
+                                    {{-- กรณีราคาปกติ --}}
+                                    <p class="font-bold text-emerald-600">฿{{ number_format($totalPrice) }}</p>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -349,7 +385,7 @@
             </div>
         </div>
 
-        {{-- ==================== [แก้ไขใหม่] ยอดชำระเงินจริง ==================== --}}
+        {{-- ==================== 3. ส่วนสรุปยอดชำระจริง (Payment Summary) ==================== --}}
         <div class="border border-gray-200 p-5 rounded-lg shadow-sm mb-6 bg-white">
             <h1 class="font-bold text-xl border-b border-gray-200 pb-4 mb-4 text-gray-800">วิธีชำระเงิน</h1>
             <div class="flex flex-col lg:flex-row lg:gap-8">
@@ -376,7 +412,8 @@
                             {{-- ยอดรวมสินค้า --}}
                             <div class="flex justify-between">
                                 <span class="text-gray-600">รวมการสั่งซื้อ</span>
-                                <span class="text-gray-900 font-medium">฿{{ number_format($total ?? 0) }}</span>
+                                {{-- ★★★ [แก้ไข 3] ใช้ $grandTotal แทน $total ★★★ --}}
+                                <span class="text-gray-900 font-medium">฿{{ number_format($grandTotal) }}</span>
                             </div>
 
                             <div class="flex justify-between">
@@ -386,12 +423,12 @@
 
                             <div class="flex justify-between border-t border-gray-300 pt-3 mt-2 text-lg font-bold">
                                 <span class="text-gray-800">ยอดชำระทั้งหมด</span>
-                                <span class="text-red-500">฿{{ number_format($total ?? 0) }}</span>
+                                {{-- ★★★ [แก้ไข 3] ใช้ $grandTotal แทน $total ★★★ --}}
+                                <span class="text-red-500">฿{{ number_format($grandTotal) }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="mt-6 flex flex-col gap-3">
-                        {{-- [แก้ไข] ลิงก์ไป QR Code ต้องส่ง queryString ที่มี ID สินค้าที่เลือกไปด้วย --}}
                         <a href="/qr?{{ $queryString ?? '' }}"
                             class="btn btn-primary w-full text-lg shadow-md hover:shadow-lg">
                             ชำระเงิน
@@ -405,7 +442,7 @@
 
     </div>
 
-    {{-- Script Dropdown (คงเดิม) --}}
+    {{-- Script Dropdown --}}
     <script>
         function addressDropdown() {
             return {
@@ -416,37 +453,54 @@
                 districts: [],
                 loadEditData(provinceId, amphureId, districtId) {
                     this.selectedProvince = provinceId;
-                    fetch(`/api/amphures/${provinceId}`).then(r => r.json()).then(data => {
-                        this.amphures = Array.isArray(data) ? data : (data.data || []);
-                        this.selectedAmphure = amphureId;
-                        if (amphureId) {
-                            fetch(`/api/districts/${amphureId}`).then(r => r.json()).then(data => {
-                                this.districts = Array.isArray(data) ? data : (data.data || []);
-                                this.selectedDistrict = districtId;
-                            });
-                        }
-                    });
+                    fetch(`/api/amphures/${provinceId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.amphures = Array.isArray(data) ? data : (data.data || []);
+                            this.selectedAmphure = amphureId;
+                            if (amphureId) {
+                                fetch(`/api/districts/${amphureId}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.districts = Array.isArray(data) ? data : (data.data || []);
+                                        this.selectedDistrict = districtId;
+                                    })
+                                    .catch(error => console.error('Error fetching districts:', error));
+                            }
+                        })
+                        .catch(error => console.error('Error fetching amphures:', error));
                 },
+
                 fetchAmphures() {
                     this.selectedAmphure = '';
                     this.selectedDistrict = '';
                     this.amphures = [];
                     this.districts = [];
+
                     if (this.selectedProvince) {
-                        fetch(`/api/amphures/${this.selectedProvince}`).then(r => r.json()).then(data => {
-                            this.amphures = Array.isArray(data) ? data : (data.data || []);
-                        });
+                        fetch(`/api/amphures/${this.selectedProvince}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                this.amphures = Array.isArray(data) ? data : (data.data || []);
+                            })
+                            .catch(error => console.error('Error fetching amphures:', error));
                     }
                 },
+
                 fetchDistricts() {
                     this.selectedDistrict = '';
                     this.districts = [];
+
                     if (this.selectedAmphure) {
-                        fetch(`/api/districts/${this.selectedAmphure}`).then(r => r.json()).then(data => {
-                            this.districts = Array.isArray(data) ? data : (data.data || []);
-                        });
+                        fetch(`/api/districts/${this.selectedAmphure}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                this.districts = Array.isArray(data) ? data : (data.data || []);
+                            })
+                            .catch(error => console.error('Error fetching districts:', error));
                     }
                 },
+
                 getZipCode() {
                     if (!this.selectedDistrict || this.districts.length === 0) return '';
                     const district = this.districts.find(d => d.id == this.selectedDistrict);

@@ -49,7 +49,7 @@ class CartController extends Controller
     public function index()
     {
         $userId = $this->getUserId();
-
+        // dd(Cart::session($userId)->getContent());
         if (Auth::check()) {
             $this->restoreCartFromDatabase();
         }
@@ -60,13 +60,14 @@ class CartController extends Controller
         return view('cart', compact('items', 'total'));
     }
 
-    // [แก้ไข] ฟังก์ชันเพิ่มสินค้า
+    // ใน CartController.php
+
     public function addToCart($productId)
     {
         // 1. ดึงข้อมูลสินค้า (ใช้ Model เพื่อเก็บเป็น associatedModel)
         $productModel = Product::findOrFail($productId);
 
-        // 2. [เพิ่ม] Query เพื่อดึงราคาและส่วนลดจาก product_salepage
+        // 2. ดึงราคาและส่วนลดจากตาราง product_salepage
         $priceInfo = DB::table('product')
             ->select('product.pd_price', 'product_salepage.pd_sp_discount')
             ->leftJoin('product_salepage', function ($join) {
@@ -76,40 +77,36 @@ class CartController extends Controller
             ->where('product.pd_id', $productId)
             ->first();
 
-        // 3. [เพิ่ม] คำนวณราคาขายจริง
-        $normalPrice = (float) $priceInfo->pd_price;
+        // 3. คำนวณราคา
+        $normalPrice = (float) $priceInfo->pd_price; // ราคาปกติ (เอาไว้แสดงขีดฆ่า)
         $discount = isset($priceInfo->pd_sp_discount) ? (float) $priceInfo->pd_sp_discount : 0;
-        $salePrice = $normalPrice - $discount; // ราคาทีขายจริง (หักส่วนลดแล้ว)
+        $salePrice = ($normalPrice - $discount); // ราคาขายจริง (เอาไปคำนวณยอดเงิน)
 
         $userId = $this->getUserId();
-
-        // รับค่าจำนวนจาก Input
         $qty = request()->input('quantity', 1);
         $qty = ($qty < 1) ? 1 : $qty;
 
         $existingItem = Cart::session($userId)->get($productId);
 
         if ($existingItem) {
-            // อัปเดตจำนวนและราคาล่าสุด (กรณีมีการเปลี่ยนราคา)
             Cart::session($userId)->update($productId, [
                 'quantity' => $qty,
                 'price' => $salePrice, // อัปเดตราคาล่าสุด
                 'attributes' => [
                     'image' => $productModel->pd_img,
-                    'original_price' => $normalPrice, // [สำคัญ] เก็บราคาเต็มไว้โชว์ขีดฆ่า
+                    'original_price' => $normalPrice, // [เพิ่มบรรทัดนี้] เก็บราคาปกติ
                     'discount' => $discount,
                 ],
             ]);
         } else {
-            // เพิ่มสินค้าใหม่
             Cart::session($userId)->add([
                 'id' => $productId,
                 'name' => $productModel->pd_name,
-                'price' => $salePrice, // [สำคัญ] ใช้ราคาที่ลดแล้วเป็นราคาหลักในตะกร้า
+                'price' => $salePrice, // ราคาขายจริง
                 'quantity' => $qty,
                 'attributes' => [
                     'image' => $productModel->pd_img,
-                    'original_price' => $normalPrice, // [สำคัญ] เก็บราคาเต็มไว้โชว์ขีดฆ่า
+                    'original_price' => $normalPrice, // [เพิ่มบรรทัดนี้] เก็บราคาปกติ
                     'discount' => $discount,
                 ],
                 'associatedModel' => $productModel,

@@ -37,8 +37,12 @@
                                 // ถ้าไม่มีให้ใช้ราคา price ปกติ (กัน Error กรณีสินค้าเก่าค้างในตะกร้า)
                                 $originalPrice = $item->attributes->has('original_price')
                                     ? $item->attributes->original_price
-                                    : $price;
+                                    : 0;
 
+                                    $discounPrice = $item->attributes->has('discount')
+                                        ? $item->attributes->discount
+                                        : 0;
+                    
                                 // คำนวณราคารวมของแถวนี้
                                 $totalPrice = $price * $quantity; // ราคาทีต้องจ่ายจริง
                                 $totalOriginalPrice = $originalPrice * $quantity; // ราคาเต็มรวม
@@ -68,7 +72,7 @@
                                     </div>
                                     <div class="flex-1 mt-1">
                                         <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
-                                        <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น: ฿{{ number_format($price) }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น: ฿{{ number_format($totalOriginalPrice) }}</p>
                                     </div>
                                 </div>
 
@@ -81,8 +85,8 @@
                                         @if ($hasDiscount)
                                             {{-- กรณีมีส่วนลด --}}
                                             <div class="flex items-center gap-2">
-                                                <span
-                                                    class="text-sm text-gray-400 line-through">฿{{ number_format($totalOriginalPrice) }}</span>
+                                                {{-- <span
+                                                    class="text-sm text-gray-400 line-through">฿{{ number_format($totalOriginalPrice) }}</span> --}}
                                             </div>
                                             <div class="text-2xl font-bold text-red-600">
                                                 ฿{{ number_format($totalPrice) }}
@@ -131,7 +135,7 @@
                                 <div class="flex justify-between mt-5 text-base text-gray-600">
                                     <div>ยอดรวมสินค้า (<span id="selected-count">{{ count($items) }}</span> รายการ)</div>
                                     <div class="font-medium">฿<span
-                                            id="subtotal-display">{{ number_format($total) }}</span></div>
+                                            id="subtotal-display">{{ number_format($totalPrice) }}</span></div>
                                 </div>
                                 <div class="border-t border-gray-200 my-4"></div>
                                 <div class="flex justify-between items-center mb-6">
@@ -141,7 +145,7 @@
                                     </div>
                                     <div>
                                         <h1 class="text-emerald-600 font-bold text-2xl md:text-3xl">
-                                            ฿<span id="total-display">{{ number_format($total) }}</span>
+                                            ฿<span id="total-display">{{ number_format($totalOriginalPrice) }}</span>
                                         </h1>
                                     </div>
                                 </div>
