@@ -109,6 +109,8 @@ class CartController extends Controller
             'quantity' => $quantity,
         ]);
 
+        // dd(Cart::session($userId)->get($productId));
+
         $this->saveCartToDatabase();
 
         return back();

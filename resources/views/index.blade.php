@@ -89,6 +89,7 @@
     <div class="container mx-auto px-4 mt-12 mb-20">
         <div class="flex justify-between items-end mb-8">
             <div>
+                {{-- ปรับหัวข้อตามต้องการ --}}
                 <h2 class="text-3xl font-bold text-gray-900">สินค้าแนะนำ</h2>
                 <p class="text-gray-500 mt-1">คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
             </div>
@@ -98,17 +99,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
-                    {{-- 
-                        [CALCULATION ZONE]
-                        คำนวณค่าตัวแปรไว้ตรงนี้ เพื่อความชัวร์ของเงื่อนไข 
-                    --}}
                     @php
-                        // แปลงค่าเป็นตัวเลขทศนิยม (float) ป้องกัน error เรื่อง string
-                        $normalPrice = (float) $product->pd_price;
-                        $salePrice = isset($product->prom_price_total) ? (float) $product->prom_price_total : 0;
+                        // 1. ราคาขายปัจจุบัน (pd_price)
+                        $currentPrice = (float) $product->pd_price;
+                        
+                        // 2. ราคาเต็มก่อนลด (pd_full_price)
+                        // ใช้ operator ?? 0 เพื่อป้องกัน error ถ้า field นี้เป็น null
+                        $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
 
-                        // สร้างเงื่อนไข: "มีราคาโปร" และ "ราคาโปรต้องน้อยกว่าราคาปกติ"
-                        $isOnSale = $salePrice > 0 && $salePrice < $normalPrice;
+                        // 3. ส่วนลดจากตาราง product_salepage (field: pd_sp_discount)
+                        $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
+
+                        // เช็คว่ามีส่วนลดจริงหรือไม่ (มากกว่า 0 บาท)
+                        $isOnSale = $discount > 0;
                     @endphp
 
                     <div
@@ -121,11 +124,11 @@
                                     alt="{{ $product->pd_name }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
 
-                                {{-- Logic ป้าย SALE --}}
+                                {{-- Logic ป้าย SALE: แสดงจำนวนเงินที่ลด --}}
                                 @if ($isOnSale)
                                     <div
-                                        class="absolute top-2 left-2 badge badge-error text-white gap-1 text-xs font-bold shadow-sm">
-                                        SALE
+                                        class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                        ลด ฿{{ number_format($discount) }}
                                     </div>
                                 @endif
 
@@ -141,8 +144,8 @@
 
                         {{-- รายละเอียด --}}
                         <div class="card-body p-4">
-                            {{-- หมวดหมู่ (Mockup เพื่อความสวยงาม) --}}
-                            <div class="text-xs text-gray-400 mb-1">สินค้าทั่วไป</div>
+                            {{-- หมวดหมู่ (Mockup) --}}
+                            <div class="text-xs text-gray-400 mb-1">สินค้าแนะนำ</div>
 
                             <h2
                                 class="card-title text-sm md:text-base font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
@@ -153,22 +156,17 @@
                             </h2>
 
                             <div class="flex justify-between items-end mt-2">
-                                {{-- ส่วนที่แก้ไข: ปรับเป็นแนวนอนและสลับตำแหน่ง --}}
                                 <div class="flex items-baseline gap-2">
-                                    {{-- Logic แสดงราคา (ใช้ตัวแปรที่คำนวณไว้ด้านบน) --}}
-                                    @if ($isOnSale)
-                                        {{-- 1. ราคาเต็ม (ขีดฆ่า) อยู่ด้านซ้าย --}}
-                                        <span
-                                            class="text-xs text-gray-400 line-through">฿{{ number_format($normalPrice) }}</span>
 
-                                        {{-- 2. ราคาลด (ตัวหนา) อยู่ด้านขวา --}}
-                                        <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($salePrice) }}</span>
+                                    @if ($isOnSale)
+                                        {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
+                                        <span class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
+                                        <span class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
                                     @else
-                                        {{-- ราคาปกติ (กรณีไม่มีโปร หรือราคาเท่ากัน) --}}
-                                        <span
-                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($normalPrice) }}</span>
+                                        {{-- กรณีไม่มีส่วนลด: แสดงราคาขายปัจจุบันสีเขียว --}}
+                                        <span class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                     @endif
+
                                 </div>
                             </div>
                         </div>

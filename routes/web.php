@@ -10,11 +10,6 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
 
 // --- 1. หน้าแรก ---
 Route::get('/', [HomeController::class, 'index'])->name('home');

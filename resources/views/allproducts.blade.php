@@ -6,8 +6,6 @@
         <div class="container mx-auto px-4">
 
             {{-- Header --}}
-
-
             <div class="flex flex-col lg:flex-row gap-8">
 
                 {{-- SIDEBAR --}}
@@ -37,9 +35,12 @@
                                 <ul class="menu bg-base-100 w-full p-0 text-gray-600">
                                     <li><a href="{{ route('allproducts') }}"
                                             class="{{ !request('category') ? 'active' : '' }}">ทั้งหมด</a></li>
-                                    @foreach ($categories as $cat)
-                                        <li><a href="#">{{ $cat }}</a></li>
-                                    @endforeach
+                                    {{-- ตรวจสอบตัวแปร categories ก่อน loop เพื่อป้องกัน error --}}
+                                    @if (isset($categories))
+                                        @foreach ($categories as $cat)
+                                            <li><a href="#">{{ $cat }}</a></li>
+                                        @endforeach
+                                    @endif
                                 </ul>
                             </div>
                             <button type="submit"
@@ -58,6 +59,24 @@
                     @if ($products->count() > 0)
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             @foreach ($products as $product)
+                                {{-- ========================================================= --}}
+                                {{-- [Logic คำนวณราคา แบบเดียวกับหน้า Index] --}}
+                                {{-- ========================================================= --}}
+                                @php
+                                    // 1. ราคาขายปัจจุบัน (pd_price)
+                                    $currentPrice = (float) $product->pd_price;
+
+                                    // 2. ราคาเต็มก่อนลด (pd_full_price)
+                                    $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
+
+                                    // 3. ส่วนลด (pd_sp_discount)
+                                    $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
+
+                                    // 4. เช็คว่ามีส่วนลดไหม
+                                    $isOnSale = $discount > 0;
+                                @endphp
+                                {{-- ========================================================= --}}
+
                                 <div
                                     class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group">
                                     <a href="{{ url('/product/' . $product->pd_id) }}">
@@ -66,13 +85,12 @@
                                                 alt="{{ $product->pd_name }}"
                                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
 
-                                            {{-- ป้าย SALE --}}
-                                            @if (isset($product->prom_price_total) &&
-                                                    $product->prom_price_total < $product->pd_price &&
-                                                    $product->prom_price_total > 0)
+                                            {{-- [แก้ใหม่] ป้าย SALE: แสดงยอดเงินที่ลด --}}
+                                            @if ($isOnSale)
                                                 <div
-                                                    class="absolute top-2 left-2 badge badge-error text-white text-xs font-bold shadow-sm">
-                                                    SALE</div>
+                                                    class="absolute top-2 left-2 bg-red-500 p-2 rounded-2xl text-white gap-1 text-xs font-bold shadow-sm">
+                                                    ลด ฿{{ number_format($discount) }}
+                                                </div>
                                             @endif
                                         </figure>
                                     </a>
@@ -85,18 +103,20 @@
                                         </h2>
                                         <div class="flex justify-between items-end mt-2">
                                             <div class="flex flex-col">
-                                                {{-- Logic ราคา --}}
-                                                @if (isset($product->prom_price_total) &&
-                                                        $product->prom_price_total < $product->pd_price &&
-                                                        $product->prom_price_total > 0)
+
+                                                {{-- [แก้ใหม่] ส่วนแสดงราคา --}}
+                                                @if ($isOnSale)
+                                                    {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
                                                     <span
-                                                        class="text-lg font-bold text-emerald-600">฿{{ number_format($product->prom_price_total) }}</span>
+                                                        class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                                     <span
-                                                        class="text-xs text-gray-400 line-through">฿{{ number_format($product->pd_price) }}</span>
+                                                        class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
                                                 @else
+                                                    {{-- กรณีไม่มีส่วนลด: แสดงราคาปกติสีเขียว --}}
                                                     <span
-                                                        class="text-lg font-bold text-emerald-600">฿{{ number_format($product->pd_price) }}</span>
+                                                        class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                                 @endif
+
                                             </div>
                                         </div>
                                     </div>
