@@ -6,16 +6,17 @@ use App\Models\CartStorage;
 use App\Models\Product;
 use Darryldecode\Cart\Facades\CartFacade as Cart;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB; // [สำคัญ] อย่าลืมเพิ่มบรรทัดนี้
 
 class CartController extends Controller
 {
-    // Helper: ดึง User ID
+    // ... (ฟังก์ชัน getUserId, saveCartToDatabase, restoreCartFromDatabase, index คงเดิม) ...
+
     private function getUserId()
     {
         return Auth::check() ? Auth::id() : '_guest_'.session()->getId();
     }
 
-    // Helper: บันทึก Cart ลง DB
     private function saveCartToDatabase()
     {
         if (Auth::check()) {
@@ -29,7 +30,6 @@ class CartController extends Controller
         }
     }
 
-    // Helper: Restore Cart จาก DB
     public function restoreCartFromDatabase()
     {
         if (Auth::check()) {
@@ -37,9 +37,7 @@ class CartController extends Controller
             $savedCart = CartStorage::where('user_id', $userId)->first();
 
             if ($savedCart) {
-                // [สำคัญ] ต้องเคลียร์ Session ปัจจุบันทิ้งก่อนรับค่าจาก DB
                 Cart::session($userId)->clear();
-
                 $items = unserialize($savedCart->cart_data);
                 foreach ($items as $item) {
                     Cart::session($userId)->add($item->toArray());
@@ -48,12 +46,10 @@ class CartController extends Controller
         }
     }
 
-    // แสดงหน้าตะกร้า
     public function index()
     {
         $userId = $this->getUserId();
 
-        // โหลดข้อมูลล่าสุดจาก DB เสมอ เพื่อให้มั่นใจว่าข้อมูลตรงกัน
         if (Auth::check()) {
             $this->restoreCartFromDatabase();
         }
@@ -64,10 +60,27 @@ class CartController extends Controller
         return view('cart', compact('items', 'total'));
     }
 
-    // เพิ่มสินค้า (รองรับจำนวน)
+    // [แก้ไข] ฟังก์ชันเพิ่มสินค้า
     public function addToCart($productId)
     {
-        $product = Product::findOrFail($productId);
+        // 1. ดึงข้อมูลสินค้า (ใช้ Model เพื่อเก็บเป็น associatedModel)
+        $productModel = Product::findOrFail($productId);
+
+        // 2. [เพิ่ม] Query เพื่อดึงราคาและส่วนลดจาก product_salepage
+        $priceInfo = DB::table('product')
+            ->select('product.pd_price', 'product_salepage.pd_sp_discount')
+            ->leftJoin('product_salepage', function ($join) {
+                $join->on('product.pd_id', '=', 'product_salepage.pd_id')
+                    ->where('product_salepage.pd_sp_active', 1);
+            })
+            ->where('product.pd_id', $productId)
+            ->first();
+
+        // 3. [เพิ่ม] คำนวณราคาขายจริง
+        $normalPrice = (float) $priceInfo->pd_price;
+        $discount = isset($priceInfo->pd_sp_discount) ? (float) $priceInfo->pd_sp_discount : 0;
+        $salePrice = $normalPrice - $discount; // ราคาทีขายจริง (หักส่วนลดแล้ว)
+
         $userId = $this->getUserId();
 
         // รับค่าจำนวนจาก Input
@@ -77,20 +90,29 @@ class CartController extends Controller
         $existingItem = Cart::session($userId)->get($productId);
 
         if ($existingItem) {
+            // อัปเดตจำนวนและราคาล่าสุด (กรณีมีการเปลี่ยนราคา)
             Cart::session($userId)->update($productId, [
                 'quantity' => $qty,
+                'price' => $salePrice, // อัปเดตราคาล่าสุด
+                'attributes' => [
+                    'image' => $productModel->pd_img,
+                    'original_price' => $normalPrice, // [สำคัญ] เก็บราคาเต็มไว้โชว์ขีดฆ่า
+                    'discount' => $discount,
+                ],
             ]);
         } else {
+            // เพิ่มสินค้าใหม่
             Cart::session($userId)->add([
                 'id' => $productId,
-                'name' => $product->pd_name,
-                'price' => $product->pd_price,
+                'name' => $productModel->pd_name,
+                'price' => $salePrice, // [สำคัญ] ใช้ราคาที่ลดแล้วเป็นราคาหลักในตะกร้า
                 'quantity' => $qty,
                 'attributes' => [
-                    // [แก้ไขตรงนี้] เช็คชื่อให้ตรงกับ DB (น่าจะเป็น pd_img)
-                    'image' => $product->pd_img,
+                    'image' => $productModel->pd_img,
+                    'original_price' => $normalPrice, // [สำคัญ] เก็บราคาเต็มไว้โชว์ขีดฆ่า
+                    'discount' => $discount,
                 ],
-                'associatedModel' => $product,
+                'associatedModel' => $productModel,
             ]);
         }
 
@@ -99,7 +121,8 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'เพิ่มสินค้าลงตะกร้าแล้ว');
     }
 
-    // เพิ่ม/ลด จำนวน (ในหน้าตะกร้า)
+    // ... (ฟังก์ชัน updateQuantity, removeItem คงเดิม) ...
+
     public function updateQuantity($productId, $action)
     {
         $userId = $this->getUserId();
@@ -109,14 +132,11 @@ class CartController extends Controller
             'quantity' => $quantity,
         ]);
 
-        // dd(Cart::session($userId)->get($productId));
-
         $this->saveCartToDatabase();
 
         return back();
     }
 
-    // ลบสินค้า
     public function removeItem($productId)
     {
         $userId = $this->getUserId();
