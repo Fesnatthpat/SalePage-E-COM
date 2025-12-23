@@ -50,8 +50,7 @@
                         </h2>
                     </div>
 
-                    {{-- ★★★ [แก้ไข] ฟอร์มเพิ่มสินค้า ให้ใช้ AJAX ★★★ --}}
-                    {{-- ใส่ ID ให้ฟอร์ม และเก็บ URL ไว้ใน data-action --}}
+                    {{-- ฟอร์มเพิ่มสินค้า (AJAX) --}}
                     <form id="add-to-cart-form" data-action="{{ route('cart.add', ['id' => $product->pd_id]) }}"
                         class="flex flex-col sm:flex-row gap-3 pt-2">
 
@@ -67,7 +66,8 @@
                                 class="w-10 h-full text-gray-500 hover:bg-gray-100 text-xl font-bold rounded-r">+</button>
                         </div>
 
-                        <button type="submit"
+                        {{-- ★★★ [สำคัญ] ใส่ ID ให้ปุ่ม เพื่อให้ Animation อ้างอิงได้ ★★★ --}}
+                        <button type="submit" id="btn-add-submit"
                             class="flex-1 btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded h-12 flex items-center justify-center shadow-md transition">
                             เพิ่มลงตะกร้า
                         </button>
@@ -85,44 +85,49 @@
         </div>
     </div>
 
-    {{-- ★★★ [เพิ่ม] Script สำหรับยิง AJAX ไป Controller ★★★ --}}
     <script>
         document.getElementById('add-to-cart-form').addEventListener('submit', function(e) {
-            e.preventDefault(); // 1. หยุดการเปลี่ยนหน้า
+            e.preventDefault();
 
             const form = this;
+            const submitBtn = document.getElementById('btn-add-submit'); // อ้างอิงปุ่มกด
             const actionUrl = form.getAttribute('data-action');
             const quantity = form.querySelector('[name="quantity"]').value;
             const fetchUrl = `${actionUrl}?quantity=${quantity}`;
 
-            // 2. ส่งข้อมูลไปหลังบ้าน
             fetch(fetchUrl, {
                     method: 'GET',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest', // บอกว่าเป็น AJAX
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // 3. เรียกฟังก์ชันใน layout เพื่ออัปเดตตัวเลข
-                        if (window.updateCartBadge) {
-                            window.updateCartBadge(data.cartCount);
+
+                        // ★★★ 1. เรียก Animation ลอยไปตะกร้า (ถ้ามีฟังก์ชันนี้) ★★★
+                        // (ฟังก์ชันนี้ควรอยู่ใน layout.blade.php ของคุณ)
+                        if (typeof window.flyToCart === 'function') {
+                            window.flyToCart(submitBtn);
                         }
 
-                        // 4. แสดง Popup สวยๆ
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-                        Toast.fire({
+                        // ★★★ 2. แสดง Popup ตรงกลาง (Center) ★★★
+                        Swal.fire({
                             icon: 'success',
-                            title: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว'
+                            title: 'เพิ่มลงตะกร้าแล้ว',
+                            text: 'สินค้าถูกเพิ่มเรียบร้อย',
+                            position: 'center', // ปรับเป็นตรงกลาง
+                            showConfirmButton: false,
+                            timer: 1500
                         });
+
+                        // ★★★ 3. หน่วงเวลาอัปเดตตัวเลขเล็กน้อย (เพื่อให้ของลอยถึงก่อนค่อยเปลี่ยนเลข) ★★★
+                        setTimeout(() => {
+                            if (window.updateCartBadge) {
+                                window.updateCartBadge(data.cartCount);
+                            }
+                        }, 800); // รอ 800ms
                     }
                 })
                 .catch(error => {

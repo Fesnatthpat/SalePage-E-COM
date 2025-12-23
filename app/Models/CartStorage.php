@@ -11,7 +11,7 @@ class CartStorage extends Model
 
     protected $fillable = ['user_id', 'cart_data'];
 
-    // [ต้องมีบรรทัดนี้] เพื่อแปลง JSON เป็น Array อัตโนมัติ
+    // ★★★ [สำคัญมาก] บรรทัดนี้ต้องมี เพื่อแปลงข้อมูลตะกร้าเป็น JSON อัตโนมัติ ★★★
     protected $casts = [
         'cart_data' => 'array',
     ];
