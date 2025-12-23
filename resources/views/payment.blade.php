@@ -11,28 +11,22 @@
             $finalTotal = $grandTotal + $shippingCost - $discount;
         @endphp
 
-        {{-- ==================== 1. ส่วนที่อยู่ (Address Section) ==================== --}}
+        {{-- ==================== 1. ส่วนที่อยู่ ==================== --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-gray-800">ที่อยู่ในการจัดส่งสินค้า</h2>
             </div>
 
-            {{-- ★★★ [แก้ไข 1] เพิ่ม Logic Alpine.js ตรงนี้เพื่อจำค่าการเลือก ★★★ --}}
             <div x-data="{
                 activeAddress: null,
                 init() {
-                    // 1. ลองดึงค่าจาก LocalStorage
                     let stored = localStorage.getItem('selected_address_id');
-                    // 2. ค่า Default จาก PHP (ที่อยู่แรก)
                     let defaultId = {{ $addresses->count() > 0 ? $addresses->first()->id : 'null' }};
-            
-                    // 3. ตรวจสอบ: ถ้ามีค่าที่เคยบันทึกไว้ ให้ใช้ค่านั้น, ถ้าไม่มีให้ใช้ค่าแรก
-                    // (แปลงเป็น Int เพื่อความชัวร์ในการเปรียบเทียบ)
                     this.activeAddress = stored ? parseInt(stored) : defaultId;
                 },
                 selectAddress(id) {
                     this.activeAddress = id;
-                    localStorage.setItem('selected_address_id', id); // บันทึกลงเครื่อง
+                    localStorage.setItem('selected_address_id', id);
                 }
             }" x-init="init()">
 
@@ -42,7 +36,6 @@
 
                         {{-- Card ที่อยู่ --}}
                         <div class="relative border rounded-lg p-6 mb-4 transition-all duration-200 cursor-pointer"
-                            {{-- ★★★ [แก้ไข 2] เปลี่ยนเงื่อนไขการเช็ค activeAddress และ Event Click ★★★ --}}
                             :class="activeAddress === {{ $address->id }} ? 'border-emerald-500 bg-emerald-50/10' :
                                 'border-gray-300 hover:border-emerald-300'"
                             @click="selectAddress({{ $address->id }})">
@@ -51,13 +44,10 @@
                                 <div>
                                     <div class="flex items-center gap-3 mb-2">
                                         <h3 class="font-bold text-gray-800 text-base">บ้านของฉัน</h3>
-                                        {{-- แสดง Badge ค่าเริ่มต้นเฉพาะถ้าเป็นตัวแรกของ List (หรือตาม Logic DB) --}}
                                         @if ($index === 0)
                                             <span
                                                 class="text-[10px] text-emerald-600 border border-emerald-600 px-2 py-0.5 rounded">ค่าเริ่มต้น</span>
                                         @endif
-
-                                        {{-- Badge บอกว่าเลือกอยู่ (Optional) --}}
                                         <span x-show="activeAddress === {{ $address->id }}"
                                             class="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded ml-2">เลือกอยู่</span>
                                     </div>
@@ -79,15 +69,30 @@
                                     </div>
                                 </div>
 
-                                {{-- ปุ่มแก้ไข (ใช้ @click.stop เพื่อป้องกันการ Trigger เลือกที่อยู่ซ้ำซ้อน) --}}
-                                <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
-                                    class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
-                                    แก้ไขที่อยู่
-                                </button>
+                                {{-- ปุ่มดำเนินการ --}}
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="{{ $modalEditId }}.showModal()" @click.stop
+                                        class="btn btn-sm btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 font-normal px-4">
+                                        แก้ไขที่อยู่
+                                    </button>
+
+                                    {{-- ★★★ [แก้ไข 1] ปุ่มลบ ใช้ SweetAlert2 ★★★ --}}
+                                    {{-- ตั้ง ID ให้ Form เพื่อให้ JS อ้างอิงได้ --}}
+                                    <form id="delete-form-{{ $address->id }}"
+                                        action="{{ route('address.destroy', $address->id) }}" method="POST" @click.stop>
+                                        @csrf
+                                        @method('DELETE')
+                                        {{-- เปลี่ยน type="submit" เป็น type="button" และเรียกฟังก์ชัน JS --}}
+                                        <button type="button" onclick="confirmDelete('delete-form-{{ $address->id }}')"
+                                            class="btn btn-sm btn-outline border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 hover:text-red-600 font-normal px-3">
+                                            ลบ
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Modal Edit (คงเดิม) --}}
+                        {{-- Modal Edit (เหมือนเดิม เพิ่มแค่ onsubmit="showLoading()") --}}
                         <dialog id="{{ $modalEditId }}" class="modal modal-middle" x-data="addressDropdown()"
                             x-init="loadEditData('{{ $address->province_id }}', '{{ $address->amphure_id }}', '{{ $address->district_id }}')">
                             <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden cursor-default"
@@ -100,9 +105,9 @@
                                 </div>
                                 <div class="p-6 max-h-[75vh] overflow-y-auto">
                                     <form action="{{ route('address.update', $address->id) }}" method="POST"
-                                        id="form_edit_{{ $address->id }}">
+                                        id="form_edit_{{ $address->id }}" onsubmit="showLoading()">
                                         @csrf @method('PUT')
-                                        {{-- ... (Content ใน Form คงเดิม) ... --}}
+                                        {{-- (เนื้อหาใน Form คงเดิม ไม่เปลี่ยนแปลง) --}}
                                         <div class="mb-6">
                                             <h4 class="text-emerald-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,8 +142,7 @@
                                             </div>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                 <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">จังหวัด <span
-                                                            class="text-red-500">*</span></label>
+                                                    <label class="label-text text-gray-500 mb-1">จังหวัด</label>
                                                     <select name="province_id" x-model="selectedProvince"
                                                         @change="fetchAmphures()"
                                                         class="select select-bordered w-full rounded focus:outline-emerald-500">
@@ -150,8 +154,7 @@
                                                     </select>
                                                 </div>
                                                 <div class="form-control">
-                                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต <span
-                                                            class="text-red-500">*</span></label>
+                                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต</label>
                                                     <select name="amphure_id" x-model="selectedAmphure"
                                                         @change="fetchDistricts()" :disabled="!selectedProvince"
                                                         class="select select-bordered w-full rounded focus:outline-emerald-500 disabled:bg-gray-100">
@@ -188,13 +191,14 @@
                                             </div>
                                         </div>
                                     </form>
-                                </div>
-                                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                                    <form method="dialog"><button
-                                            class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button>
-                                    </form>
-                                    <button onclick="document.getElementById('form_edit_{{ $address->id }}').submit()"
-                                        class="btn bg-[#00B900] hover:bg-[#009900] text-white border-none font-normal px-6">บันทึกข้อมูล</button>
+                                    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                                        <form method="dialog"><button
+                                                class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button>
+                                        </form>
+                                        <button
+                                            onclick="document.getElementById('form_edit_{{ $address->id }}').submit()"
+                                            class="btn bg-[#00B900] hover:bg-[#009900] text-white border-none font-normal px-6">บันทึกข้อมูล</button>
+                                    </div>
                                 </div>
                             </div>
                         </dialog>
@@ -218,10 +222,9 @@
             @endif
         </div>
 
-        {{-- ==================== 2. สั่งซื้อสินค้าแล้ว (แสดงรายการสินค้าจริง) ==================== --}}
+        {{-- 2. สั่งซื้อสินค้าแล้ว --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-6">สั่งซื้อสินค้าแล้ว</h2>
-
             <div class="space-y-4">
                 @if (isset($cartItems) && count($cartItems) > 0)
                     @foreach ($cartItems as $item)
@@ -229,25 +232,20 @@
                             $originalPrice = $item->attributes->original_price ?? $item->price;
                             $totalPrice = $item->price * $item->quantity;
                         @endphp
-                        {{-- รายการสินค้า --}}
                         <div
                             class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                             <div class="flex items-center gap-4">
-                                {{-- รูปสินค้า --}}
                                 <div
                                     class="w-16 h-16 bg-gray-100 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
                                     <img src="https://crm.kawinbrothers.com/product_images/{{ $item->attributes->image }}"
                                         class="w-full h-full object-cover" />
                                 </div>
-                                {{-- รายละเอียด --}}
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm md:text-base line-clamp-1">
                                         {{ $item->name }}</p>
                                     <p class="text-sm text-gray-500">จำนวน: {{ $item->quantity }} ชิ้น</p>
                                 </div>
                             </div>
-
-                            {{-- ราคา --}}
                             <div class="text-right">
                                 <p class="font-bold text-emerald-600">฿{{ number_format($totalPrice) }}</p>
                                 @if ($originalPrice > $item->price)
@@ -263,10 +261,9 @@
             </div>
         </div>
 
-        {{-- ==================== 3. วิธีชำระเงิน & สรุปยอด ==================== --}}
+        {{-- 3. วิธีชำระเงิน --}}
         <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-6">วิธีชำระเงิน</h2>
-
             <div class="flex flex-col lg:flex-row gap-8 items-start">
                 <div class="flex-1 w-full">
                     <div class="mb-4">
@@ -278,12 +275,10 @@
                             <option>โอนเงินธนาคาร</option>
                         </select>
                     </div>
-
                     <div class="border border-gray-300 rounded p-4 flex items-center gap-4">
                         <input type="checkbox" checked
                             class="checkbox checkbox-primary rounded-sm w-5 h-5 border-gray-400" />
                         <div class="border border-gray-200 rounded px-3 py-1 bg-white">
-                            {{-- <span class="text-xs text-gray-400">QR Code Image</span> --}}
                             <img src="/images/ci-qrpayment-img-01.png" alt="" class="w-24">
                         </div>
                         <span class="text-gray-700">ชำระผ่านพร้อมเพย์</span>
@@ -292,7 +287,6 @@
 
                 <div class="w-full lg:w-[350px] bg-white lg:border-l lg:pl-8 border-gray-100">
                     <h3 class="font-bold text-gray-800 mb-4">สรุปยอดชำระ:</h3>
-
                     <div class="space-y-2 text-sm text-gray-600 mb-4">
                         <div class="flex justify-between">
                             <span>รวมการสั่งซื้อ</span>
@@ -309,32 +303,25 @@
                             </div>
                         @endif
                     </div>
-
                     <div class="flex justify-between items-center border-t border-gray-200 pt-4 mb-6">
                         <span class="font-bold text-gray-800">ยอดชำระทั้งหมด</span>
                         <span class="font-bold text-red-500 text-xl">฿{{ number_format($finalTotal) }}</span>
                     </div>
 
-                    <form action="{{ route('payment.process') }}" method="POST">
+                    <form action="{{ route('payment.process') }}" method="POST"
+                        onsubmit="return handlePaymentSubmit()">
                         @csrf
                         @if (isset($selectedItems))
                             @foreach ($selectedItems as $id)
                                 <input type="hidden" name="selected_items[]" value="{{ $id }}">
                             @endforeach
                         @endif
-
-                        {{-- ★★★ [แก้ไข 3] เพิ่ม Hidden Input สำหรับส่ง address_id ไปยัง Backend ★★★ --}}
-                        {{-- ต้องวางไว้ใน Form เดียวกัน และอยู่นอก x-data scope ไม่ได้ จึงใช้วิธีดึงจาก localStorage หรือรับค่าผ่าน JS ก็ได้ --}}
-                        {{-- แต่วิธีที่ง่ายคือ ใช้ x-data ครอบฟอร์ม หรือใช้ JS ดึงค่าก่อน Submit --}}
-                        {{-- เนื่องจาก x-data อยู่ด้านบน เราจะใช้ Script ด้านล่างเพื่อ Inject ค่า input นี้ก่อน submit --}}
                         <input type="hidden" name="address_id" id="hidden_address_id">
-
-                        <button type="submit" onclick="prepareSubmit()"
+                        <button type="submit"
                             class="btn bg-[#4F46E5] hover:bg-[#4338ca] text-white border-none w-full text-base font-normal h-11 rounded shadow-sm">
                             ชำระเงิน
                         </button>
                     </form>
-
                     <div class="text-center mt-3">
                         <a href="{{ route('cart.index') }}"
                             class="text-xs text-gray-500 hover:text-gray-700 underline">ยกเลิกคำสั่งซื้อ</a>
@@ -343,19 +330,19 @@
             </div>
         </div>
 
-        {{-- ==================== Modal Add New ==================== --}}
+        {{-- Modal Add New --}}
         <dialog id="modal_add_new" class="modal modal-middle" x-data="addressDropdown()">
             <div class="modal-box w-11/12 max-w-4xl p-0 bg-white rounded-lg shadow-xl overflow-hidden">
-                {{-- (Content Modal Add New คงเดิม) --}}
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                     <h3 class="font-bold text-lg text-gray-800">เพิ่มที่อยู่จัดส่งใหม่</h3>
                     <form method="dialog"><button
                             class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button></form>
                 </div>
-
                 <div class="p-6 max-h-[75vh] overflow-y-auto">
-                    <form action="{{ route('address.save') }}" method="POST" id="form_add_new">
+                    <form action="{{ route('address.save') }}" method="POST" id="form_add_new"
+                        onsubmit="showLoading()">
                         @csrf
+                        {{-- (เนื้อหา Form คงเดิม ไม่เปลี่ยนแปลง) --}}
                         <div class="mb-6">
                             <h4 class="text-emerald-600 font-bold mb-4">ข้อมูลผู้รับ</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,7 +358,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="mb-4">
                             <h4 class="text-emerald-600 font-bold mb-4">ที่อยู่จัดส่ง</h4>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -386,11 +372,9 @@
                                         class="input input-bordered w-full rounded focus:outline-emerald-500 text-center" />
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">จังหวัด <span
-                                            class="text-red-500">*</span></label>
+                                    <label class="label-text text-gray-500 mb-1">จังหวัด</label>
                                     <select name="province_id" x-model="selectedProvince" @change="fetchAmphures()"
                                         class="select select-bordered w-full rounded focus:outline-emerald-500">
                                         <option value="">-- เลือกจังหวัด --</option>
@@ -400,8 +384,7 @@
                                     </select>
                                 </div>
                                 <div class="form-control">
-                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต <span
-                                            class="text-red-500">*</span></label>
+                                    <label class="label-text text-gray-500 mb-1">อำเภอ/เขต</label>
                                     <select name="amphure_id" x-model="selectedAmphure" @change="fetchDistricts()"
                                         :disabled="!selectedProvince"
                                         class="select select-bordered w-full rounded focus:outline-emerald-500 disabled:bg-gray-100">
@@ -412,7 +395,6 @@
                                     </select>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div class="form-control">
                                     <label class="label-text text-gray-500 mb-1">ตำบล/แขวง</label>
@@ -430,7 +412,6 @@
                                         class="input input-bordered w-full rounded bg-gray-50 text-gray-700 font-semibold" />
                                 </div>
                             </div>
-
                             <div class="form-control mt-4">
                                 <label class="label-text text-gray-500 mb-1">หมายเหตุการจัดส่ง</label>
                                 <textarea name="note" class="textarea textarea-bordered w-full rounded focus:outline-emerald-500 h-24"
@@ -439,7 +420,6 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
                     <form method="dialog"><button
                             class="btn btn-ghost text-gray-500 hover:bg-gray-200 font-normal">ยกเลิก</button></form>
@@ -449,21 +429,49 @@
             </div>
         </dialog>
 
+        {{-- Loading Overlay --}}
+        <div id="loading-overlay" class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4 animate-bounce-in">
+                <span class="loading loading-spinner loading-lg text-emerald-500 scale-150"></span>
+                <p class="text-gray-600 font-semibold text-lg animate-pulse">กำลังประมวลผล...</p>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // ★★★ [แก้ไข 4] Script เตรียมค่า address_id ก่อน Submit ★★★
-        function prepareSubmit() {
-            // ดึงค่า ID จาก LocalStorage
-            const storedId = localStorage.getItem('selected_address_id');
-            // หรือค่า Default จาก PHP (ตัวแรก)
-            const defaultId = "{{ $addresses->count() > 0 ? $addresses->first()->id : '' }}";
-
-            // ใส่ค่าลงใน Hidden Input
-            document.getElementById('hidden_address_id').value = storedId ? storedId : defaultId;
+        function showLoading() {
+            const loader = document.getElementById('loading-overlay');
+            if (loader) loader.classList.remove('hidden');
         }
 
-        // Script Dropdown เดิม
+        // ★★★ [แก้ไข 2] ฟังก์ชัน Confirm Delete ด้วย SweetAlert2 ★★★
+        function confirmDelete(formId) {
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "คุณต้องการลบที่อยู่นี้ใช่หรือไม่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // สีแดง
+                cancelButtonColor: '#6b7280', // สีเทา
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showLoading(); // แสดง Loading
+                    document.getElementById(formId).submit(); // ส่ง Form
+                }
+            })
+        }
+
+        function handlePaymentSubmit() {
+            const storedId = localStorage.getItem('selected_address_id');
+            const defaultId = "{{ $addresses->count() > 0 ? $addresses->first()->id : '' }}";
+            document.getElementById('hidden_address_id').value = storedId ? storedId : defaultId;
+            showLoading();
+            return true;
+        }
+
         function addressDropdown() {
             return {
                 selectedProvince: '',

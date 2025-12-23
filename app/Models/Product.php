@@ -9,15 +9,31 @@ class Product extends Model
 {
     use HasFactory;
 
-    // 1. ระบุชื่อตารางให้ตรงกับฐานข้อมูล (ของคุณน่าจะเป็น 'product')
-    protected $table = 'product';
+    protected $table = 'product'; // ตรวจสอบชื่อตารางให้ตรงกับ DB จริง
 
-    // 2. ระบุ Primary Key (ของคุณใช้ 'pd_id' แทน 'id')
     protected $primaryKey = 'pd_id';
 
-    // 3. ปิด Timestamp หากตารางไม่มี updated_at, created_at
-    // public $timestamps = false;
+    // Relationship ไปยังตาราง SalePage (ส่วนลด)
+    // หมายเหตุ: คุณควรสร้าง Model ชื่อ ProductSalepage หรือใช้ชื่อ Table ให้ถูกต้อง
+    public function salePage()
+    {
+        // สมมติว่ามี Model ProductSalepage ถ้าไม่มีให้สร้าง หรือระบุ Table เอง
+        return $this->hasOne(ProductSalepage::class, 'pd_id', 'pd_id')
+            ->where('pd_sp_active', 1);
+    }
 
-    // 4. อนุญาตให้แก้ไขข้อมูลได้ (ถ้าจำเป็น)
-    protected $guarded = [];
+    // Accessor: คำนวณราคาขายจริง (Real Price)
+    public function getRealPriceAttribute()
+    {
+        $normalPrice = $this->pd_price;
+        $discount = $this->salePage ? $this->salePage->pd_sp_discount : 0;
+
+        return max(0, $normalPrice - $discount);
+    }
+
+    // Accessor: ดึงส่วนลด
+    public function getDiscountAmountAttribute()
+    {
+        return $this->salePage ? $this->salePage->pd_sp_discount : 0;
+    }
 }
