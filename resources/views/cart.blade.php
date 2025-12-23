@@ -6,14 +6,18 @@
         {{-- Card Container --}}
         <div class="p-6 bg-white shadow rounded-lg border-gray-200 md:p-8 lg:p-12">
 
-            {{-- Form ส่งข้อมูลไปหน้า Payment --}}
-            <form action="/payment" method="GET" id="checkout-form">
+            {{-- 
+               [แก้ไขจุดสำคัญ 1] 
+               Action ชี้ไปที่ route 'payment.checkout' (หน้าเลือกที่อยู่) 
+               Method เป็น GET เพื่อให้เข้ากันได้กับ Route ที่ประกาศไว้ 
+            --}}
+            <form action="{{ route('payment.checkout') }}" method="GET" id="checkout-form">
 
                 <div class="">
                     {{-- Header --}}
                     <div class="mb-6 border-b border-gray-200 pb-4 flex items-center gap-3">
                         {{-- Checkbox เลือกทั้งหมด --}}
-                        @if (!$items->isEmpty())
+                        @if (isset($items) && !$items->isEmpty())
                             <div class="flex items-center">
                                 <input type="checkbox" id="select-all" checked
                                     class="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
@@ -24,31 +28,34 @@
                     </div>
 
                     {{-- เช็คว่าตะกร้าว่างไหม --}}
-                    @if (!$items->isEmpty())
+                    @if (isset($items) && !$items->isEmpty())
+                        {{-- ตัวแปรสำหรับเก็บผลรวมเริ่มต้น --}}
+                        @php
+                            $summaryTotalPrice = 0;
+                            $summaryTotalOriginal = 0;
+                        @endphp
+
                         {{-- Loop แสดงรายการสินค้า --}}
                         @foreach ($items as $item)
                             @php
                                 $quantity = $item->quantity;
+                                $price = $item->price; // ราคาขายจริง
 
-                                // ราคาขายจริง (Sale Price) ต่อชิ้น ที่มาจาก Controller
-                                $price = $item->price;
-
-                                // ราคาเต็ม (Original Price) ต่อชิ้น ดึงจาก attributes
-                                // ถ้าไม่มีให้ใช้ราคา price ปกติ (กัน Error กรณีสินค้าเก่าค้างในตะกร้า)
+                                // ราคาเต็ม (Original Price)
                                 $originalPrice = $item->attributes->has('original_price')
                                     ? $item->attributes->original_price
-                                    : 0;
+                                    : $price;
 
-                                    $discounPrice = $item->attributes->has('discount')
-                                        ? $item->attributes->discount
-                                        : 0;
-                    
-                                // คำนวณราคารวมของแถวนี้
-                                $totalPrice = $price * $quantity; // ราคาทีต้องจ่ายจริง
-                                $totalOriginalPrice = $originalPrice * $quantity; // ราคาเต็มรวม
+                                // คำนวณราคารวมของสินค้ารายการนี้
+                                $totalPrice = $price * $quantity;
+                                $totalOriginalPrice = $originalPrice * $quantity;
 
                                 // เช็คว่ามีส่วนลดหรือไม่
                                 $hasDiscount = $totalOriginalPrice > $totalPrice;
+
+                                // บวกสะสมเข้ายอดรวมทั้งหมด (PHP)
+                                $summaryTotalPrice += $totalPrice;
+                                $summaryTotalOriginal += $totalOriginalPrice;
                             @endphp
 
                             <div
@@ -58,8 +65,9 @@
                                 <div class="flex flex-row gap-4 w-full md:w-auto items-start">
                                     {{-- Checkbox --}}
                                     <div class="mt-8 md:mt-10">
+                                        {{-- ใส่ data-price และ data-original-price เพื่อให้ JS คำนวณ --}}
                                         <input type="checkbox" name="selected_items[]" value="{{ $item->id }}" checked
-                                            data-price="{{ $totalPrice }}"
+                                            data-price="{{ $totalPrice }}" data-original-price="{{ $totalOriginalPrice }}"
                                             class="item-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
                                             onchange="calculateTotal()">
                                     </div>
@@ -72,7 +80,8 @@
                                     </div>
                                     <div class="flex-1 mt-1">
                                         <h1 class="font-bold text-gray-800 text-sm md:text-base">{{ $item->name }}</h1>
-                                        <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น: ฿{{ number_format($totalOriginalPrice) }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">ราคาต่อชิ้น:
+                                            ฿{{ number_format($totalOriginalPrice / $quantity) }}</p>
                                     </div>
                                 </div>
 
@@ -83,11 +92,6 @@
                                     {{-- ส่วนแสดงราคา --}}
                                     <div class="flex flex-col items-end">
                                         @if ($hasDiscount)
-                                            {{-- กรณีมีส่วนลด --}}
-                                            <div class="flex items-center gap-2">
-                                                {{-- <span
-                                                    class="text-sm text-gray-400 line-through">฿{{ number_format($totalOriginalPrice) }}</span> --}}
-                                            </div>
                                             <div class="text-2xl font-bold text-red-600">
                                                 ฿{{ number_format($totalPrice) }}
                                             </div>
@@ -96,16 +100,14 @@
                                                 ประหยัด ฿{{ number_format($totalOriginalPrice - $totalPrice) }}
                                             </span>
                                         @else
-                                            {{-- กรณีราคาปกติ --}}
                                             <div class="text-2xl font-bold text-emerald-600">
                                                 ฿{{ number_format($totalPrice) }}
                                             </div>
                                         @endif
                                     </div>
 
-                                    {{-- ปุ่มจัดการจำนวนและลบ --}}
+                                    {{-- ปุ่มจัดการจำนวน --}}
                                     <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                                        {{-- กล่องแสดงจำนวน --}}
                                         <div class="flex items-center border border-gray-300 rounded h-10 md:h-12 bg-white">
                                             <a href="{{ route('cart.update', ['id' => $item->id, 'action' => 'decrease']) }}"
                                                 class="px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg">-</a>
@@ -118,7 +120,6 @@
                                                 class="px-3 py-1 text-gray-600 hover:bg-gray-100 h-full flex items-center text-lg">+</a>
                                         </div>
 
-                                        {{-- ปุ่มลบสินค้า --}}
                                         <a href="{{ route('cart.remove', $item->id) }}"
                                             class="text-red-500 hover:text-red-700 font-medium text-sm md:text-base underline md:no-underline md:btn md:btn-ghost md:btn-sm md:text-red-500">
                                             ลบรายการ
@@ -131,38 +132,57 @@
                         {{-- Footer Section --}}
                         <div class="flex flex-col lg:flex-row justify-end gap-5 mt-10">
                             <div class="w-full lg:w-[400px]">
-                                {{-- ส่วนแสดงราคารวม --}}
+
+                                {{-- ยอดรวมสินค้า (ราคาเต็ม) --}}
                                 <div class="flex justify-between mt-5 text-base text-gray-600">
                                     <div>ยอดรวมสินค้า (<span id="selected-count">{{ count($items) }}</span> รายการ)</div>
                                     <div class="font-medium">฿<span
-                                            id="subtotal-display">{{ number_format($totalPrice) }}</span></div>
+                                            id="subtotal-display">{{ number_format($summaryTotalOriginal) }}</span></div>
                                 </div>
+
+                                {{-- ส่วนลดรวม --}}
+                                <div class="flex justify-between mt-2 text-base text-red-500">
+                                    <div>ส่วนลดรวม</div>
+                                    <div class="font-medium">-฿<span
+                                            id="discount-display">{{ number_format($summaryTotalOriginal - $summaryTotalPrice) }}</span>
+                                    </div>
+                                </div>
+
                                 <div class="border-t border-gray-200 my-4"></div>
+
+                                {{-- ยอดสุทธิ --}}
                                 <div class="flex justify-between items-center mb-6">
                                     <div>
-                                        <h1 class="font-bold text-xl md:text-2xl text-gray-800">ยอดรวมที่เลือก</h1>
+                                        <h1 class="font-bold text-xl md:text-2xl text-gray-800">ยอดสุทธิที่ต้องชำระ</h1>
                                         <p class="text-xs text-gray-500">(รวมภาษีมูลค่าเพิ่มแล้ว)</p>
                                     </div>
                                     <div>
                                         <h1 class="text-emerald-600 font-bold text-2xl md:text-3xl">
-                                            ฿<span id="total-display">{{ number_format($totalOriginalPrice) }}</span>
+                                            ฿<span id="total-display">{{ number_format($summaryTotalPrice) }}</span>
                                         </h1>
                                     </div>
                                 </div>
+
                                 <div class="flex flex-col gap-3">
+                                    {{-- 
+                                       [แก้ไขจุดสำคัญ 2] 
+                                       ใช้ @auth / @guest แทน Auth::check() 
+                                    --}}
                                     @auth
                                         <button type="submit" id="checkout-btn"
                                             class="btn btn-success text-white w-full text-lg h-12">
                                             ดำเนินการชำระเงิน
                                         </button>
-                                    @else
-                                        <a href="/login"
+                                    @endauth
+
+                                    @guest
+                                        <a href="{{ route('login') }}"
                                             class="btn btn-success text-white w-full text-lg h-12 flex items-center justify-center">
                                             เข้าสู่ระบบเพื่อชำระเงิน
                                         </a>
-                                    @endauth
+                                    @endguest
 
-                                    <a href="/allproducts"
+                                    <a href="{{ route('allproducts') }}"
                                         class="btn btn-outline border-gray-300 text-gray-600 hover:bg-gray-50 w-full flex items-center justify-center">
                                         ซื้อสินค้าต่อ
                                     </a>
@@ -179,7 +199,8 @@
                             </svg>
                             <h2 class="text-2xl font-bold text-gray-400 mb-2">ตะกร้าของคุณว่างเปล่า</h2>
                             <p class="text-gray-500 mb-6">ดูเหมือนคุณยังไม่ได้เลือกสินค้าลงตะกร้าเลย</p>
-                            <a href="/allproducts" class="btn btn-primary text-white px-8">ไปเลือกซื้อสินค้า</a>
+                            <a href="{{ route('allproducts') }}"
+                                class="btn btn-primary text-white px-8">ไปเลือกซื้อสินค้า</a>
                         </div>
                     @endif
                 </div>
@@ -187,7 +208,7 @@
         </div>
     </div>
 
-    {{-- Script คำนวณราคา Real-time (คงเดิม) --}}
+    {{-- Script คำนวณราคา Real-time --}}
     <script>
         function numberWithCommas(x) {
             if (x === undefined || x === null) return "0";
@@ -203,29 +224,41 @@
         }
 
         function calculateTotal() {
-            let total = 0;
+            let totalSalePrice = 0; // ราคาทีต้องจ่ายจริง
+            let totalOriginalPrice = 0; // ราคาเต็ม
             let count = 0;
+
             const checkboxes = document.querySelectorAll('.item-checkbox');
             const checkoutBtn = document.getElementById('checkout-btn');
 
             checkboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     let price = parseFloat(checkbox.getAttribute('data-price'));
-                    if (!isNaN(price)) {
-                        total += price;
-                    }
+                    let original = parseFloat(checkbox.getAttribute('data-original-price'));
+
+                    if (!isNaN(price)) totalSalePrice += price;
+                    if (!isNaN(original)) totalOriginalPrice += original;
+                    else totalOriginalPrice += price; // Fallback
+
                     count++;
                 }
             });
 
+            // คำนวณส่วนลดรวม
+            let totalDiscount = totalOriginalPrice - totalSalePrice;
+
+            // Update หน้าจอ
             const totalDisplay = document.getElementById('total-display');
             const subtotalDisplay = document.getElementById('subtotal-display');
+            const discountDisplay = document.getElementById('discount-display');
             const selectedCount = document.getElementById('selected-count');
 
-            if (totalDisplay) totalDisplay.innerText = numberWithCommas(total);
-            if (subtotalDisplay) subtotalDisplay.innerText = numberWithCommas(total);
+            if (totalDisplay) totalDisplay.innerText = numberWithCommas(totalSalePrice);
+            if (subtotalDisplay) subtotalDisplay.innerText = numberWithCommas(totalOriginalPrice);
+            if (discountDisplay) discountDisplay.innerText = numberWithCommas(totalDiscount);
             if (selectedCount) selectedCount.innerText = count;
 
+            // จัดการ Checkbox Select All
             const selectAllCheckbox = document.getElementById('select-all');
             if (selectAllCheckbox) {
                 if (count === checkboxes.length && count > 0) {
@@ -240,6 +273,7 @@
                 }
             }
 
+            // ปิดปุ่ม Checkout ถ้าไม่ได้เลือกสินค้า
             if (checkoutBtn) {
                 if (count === 0) {
                     checkoutBtn.disabled = true;
@@ -251,10 +285,12 @@
             }
         }
 
+        // เรียกใช้ฟังก์ชันเมื่อโหลดหน้าเสร็จ
         document.addEventListener("DOMContentLoaded", function() {
             calculateTotal();
         });
 
+        // เรียกใช้เมื่อกดย้อนกลับมาหน้านี้ (สำหรับ Safari/Mobile)
         window.addEventListener("pageshow", function(event) {
             if (event.persisted) {
                 calculateTotal();

@@ -15,9 +15,9 @@
     {{-- [แก้ไข] Logic คำนวณจำนวนสินค้าในตะกร้า --}}
     @php
         $cartCount = 0;
-        // ตรวจสอบว่า Login หรือยัง? ถ้า Login แล้วค่อยดึงข้อมูลตะกร้า
-        if (Auth::check()) {
-            $cartSessionId = Auth::id();
+        // ใช้ auth()->check() แทน Auth::check()
+        if (auth()->check()) {
+            $cartSessionId = auth()->id(); // ใช้ auth()->id() แทน Auth::id()
             $cartCount = \Cart::session($cartSessionId)->getTotalQuantity();
         }
     @endphp
@@ -48,12 +48,13 @@
                                 <li><a href="/ordertracking" class="py-3 font-bold">เช็คสถานะ</a></li>
                                 <li class="border-t mt-2 pt-2">
                                     <div class="flex items-center gap-2 p-2">
-                                        @if (Auth::user()->avatar)
-                                            <img src="{{ Auth::user()->avatar }}" class="w-8 h-8 rounded-full border">
+                                        {{-- ใช้ auth()->user() แทน Auth::user() --}}
+                                        @if (auth()->user()->avatar)
+                                            <img src="{{ auth()->user()->avatar }}" class="w-8 h-8 rounded-full border">
                                         @else
                                             <div class="w-8 h-8 rounded-full bg-gray-200"></div>
                                         @endif
-                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                        <span class="font-bold text-gray-700">{{ auth()->user()->name }}</span>
                                     </div>
                                 </li>
                                 <li>
@@ -146,11 +147,12 @@
                             <div tabindex="0" role="button"
                                 class="btn btn-ghost btn-circle avatar border border-emerald-200 ring-2 ring-transparent hover:ring-emerald-400 transition">
                                 <div class="w-10 rounded-full">
-                                    @if (Auth::user()->avatar)
-                                        <img src="{{ Auth::user()->avatar }}" alt="Profile" />
+                                    {{-- ใช้ auth()->user() แทน Auth::user() --}}
+                                    @if (auth()->user()->avatar)
+                                        <img src="{{ auth()->user()->avatar }}" alt="Profile" />
                                     @else
                                         <img
-                                            src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=0D8ABC&color=fff" />
+                                            src="https://ui-avatars.com/api/?name={{ auth()->user()->name }}&background=0D8ABC&color=fff" />
                                     @endif
                                 </div>
                             </div>
@@ -159,9 +161,10 @@
                                 <li class="menu-title px-4 py-3 bg-gray-50 rounded-t-lg border-b border-gray-100 mb-2">
                                     <div class="flex flex-col gap-0.5">
                                         <span class="text-xs font-normal text-gray-500">เข้าสู่ระบบโดย</span>
+                                        {{-- ใช้ auth()->user() แทน Auth::user() --}}
                                         <span class="text-sm font-bold text-gray-800 truncate w-full"
-                                            title="{{ Auth::user()->name }}">
-                                            {{ Auth::user()->name }}
+                                            title="{{ auth()->user()->name }}">
+                                            {{ auth()->user()->name }}
                                         </span>
                                     </div>
                                 </li>

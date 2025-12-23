@@ -5,74 +5,55 @@ use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
-// use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-
-// --- 1. หน้าแรก ---
+// --- 1. หน้าทั่วไป ---
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
-// --- 2. สินค้า ---
 Route::get('/allproducts', [AllProductController::class, 'index'])->name('allproducts');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 
-// --- 3. ตะกร้าสินค้า (Cart) ---
-// หน้าแสดงตะกร้า
+// --- 2. ตะกร้าสินค้า ---
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-// เพิ่มสินค้าลงตะกร้า
 Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-// เพิ่ม/ลด จำนวนสินค้า
 Route::get('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
-// ลบสินค้า
 Route::get('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
-// --- 4. ระบบสมาชิก ---
+// --- 3. Login/Logout ---
 Route::get('/login', function () {
-    if (Auth::check()) {
+    if (auth()->check()) {
         return redirect('/');
     }
 
     return view('login');
 })->name('login');
-
 Route::get('/login/line', [AuthController::class, 'redirectToLine'])->name('login.line');
 Route::get('/callback/line', [AuthController::class, 'handleLineCallback']);
-
 Route::post('/logout', function () {
-    Auth::logout();
+    auth()->logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
     return redirect('/');
 })->name('logout');
 
-// --- 5. Route ที่ต้อง Login ---
+// --- 4. ส่วนที่ต้อง Login ---
 Route::middleware(['auth'])->group(function () {
-    // Address
-    Route::get('/payment', [AddressController::class, 'index'])->name('payment');
+
+    // [Step 1] จากตะกร้า -> มาหน้าเลือกที่อยู่ (Checkout)
+    Route::get('/checkout', [PaymentController::class, 'checkout'])->name('payment.checkout');
+
+    // [Step 2] กดยืนยัน -> ไปหน้า QR (Process)
+    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+
+    // จัดการที่อยู่
+    Route::get('/address', [AddressController::class, 'index'])->name('address.index');
     Route::post('/update-address', [AddressController::class, 'saveAddress'])->name('address.save');
     Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
     Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
-
-    // Order
-    // Route::post('/place-order', [OrderController::class, 'placeOrder'])->name('order.place');
-    // Route::get('/payment/qr/{order_id}', [OrderController::class, 'showQr'])->name('payment.qr');
 });
 
-// --- API ---
-Route::get('/qr', function () {
-    return view('qr');
-});
-
-Route::get('/orderhistory', function () {
-    return view('orderhistory');
-});
-
-Route::get('/ordertracking', function () {
-    return view('ordertracking');
-});
-
+// API ที่อยู่
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);
 Route::get('/api/districts/{amphure_id}', [AddressController::class, 'getDistricts']);
