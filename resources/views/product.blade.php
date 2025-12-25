@@ -38,6 +38,8 @@
 
                     {{-- ... (ส่วนรายละเอียดสินค้าคงเดิม) ... --}}
 
+                    {{-- เพิ่ม : แสดงรายละเอียดแบบย่อ หรือ rating ถ้ามี (ส่วนนี้ผมคงไว้ตามเดิม ไม่แตะต้อง) --}}
+
                     <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100 mt-4">
                         <h2 class="text-3xl lg:text-4xl font-bold text-emerald-600 flex items-end gap-3">
                             @if ($isOnSale)
@@ -50,10 +52,11 @@
                         </h2>
                     </div>
 
-                    {{-- ฟอร์มเพิ่มสินค้า (AJAX) --}}
+                    {{-- ฟอร์มเพิ่มสินค้า (AJAX) และปุ่มเพิ่มลงตะกร้า --}}
                     <form id="add-to-cart-form" data-action="{{ route('cart.add', ['id' => $product->pd_id]) }}"
                         class="flex flex-col sm:flex-row gap-3 pt-2">
 
+                        {{-- Input จำนวนสินค้า --}}
                         <div class="flex items-center border border-gray-300 rounded h-12 w-full sm:w-32 bg-white">
                             <button type="button" @click="quantity > 1 ? quantity-- : null"
                                 class="w-10 h-full text-gray-500 hover:bg-gray-100 text-xl font-bold rounded-l">-</button>
@@ -66,9 +69,14 @@
                                 class="w-10 h-full text-gray-500 hover:bg-gray-100 text-xl font-bold rounded-r">+</button>
                         </div>
 
-                        {{-- ★★★ [สำคัญ] ใส่ ID ให้ปุ่ม เพื่อให้ Animation อ้างอิงได้ ★★★ --}}
+                        {{-- ปุ่ม Submit เพิ่มลงตะกร้า --}}
                         <button type="submit" id="btn-add-submit"
                             class="flex-1 btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded h-12 flex items-center justify-center shadow-md transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
                             เพิ่มลงตะกร้า
                         </button>
                     </form>
@@ -90,44 +98,57 @@
             e.preventDefault();
 
             const form = this;
-            const submitBtn = document.getElementById('btn-add-submit'); // อ้างอิงปุ่มกด
+            const submitBtn = document.getElementById('btn-add-submit');
+            const originalBtnContent = submitBtn.innerHTML; // เก็บเนื้อหาเดิมของปุ่มไว้
             const actionUrl = form.getAttribute('data-action');
             const quantity = form.querySelector('[name="quantity"]').value;
-            const fetchUrl = `${actionUrl}?quantity=${quantity}`;
 
-            fetch(fetchUrl, {
-                    method: 'GET',
+            // เพิ่ม Loading State
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading loading-spinner"></span> กำลังเพิ่ม...';
+
+            const formData = new FormData();
+            formData.append('quantity', quantity);
+
+            fetch(actionUrl, {
+                    method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-
-                        // ★★★ 1. เรียก Animation ลอยไปตะกร้า (ถ้ามีฟังก์ชันนี้) ★★★
-                        // (ฟังก์ชันนี้ควรอยู่ใน layout.blade.php ของคุณ)
+                        // 1. เรียก Animation ลอยไปตะกร้า
                         if (typeof window.flyToCart === 'function') {
                             window.flyToCart(submitBtn);
                         }
 
-                        // ★★★ 2. แสดง Popup ตรงกลาง (Center) ★★★
+                        // 2. แสดง Popup
                         Swal.fire({
                             icon: 'success',
                             title: 'เพิ่มลงตะกร้าแล้ว',
                             text: 'สินค้าถูกเพิ่มเรียบร้อย',
-                            position: 'center', // ปรับเป็นตรงกลาง
+                            position: 'center',
                             showConfirmButton: false,
                             timer: 1500
                         });
 
-                        // ★★★ 3. หน่วงเวลาอัปเดตตัวเลขเล็กน้อย (เพื่อให้ของลอยถึงก่อนค่อยเปลี่ยนเลข) ★★★
+                        // 3. อัปเดตตัวเลขตะกร้า
                         setTimeout(() => {
                             if (window.updateCartBadge) {
                                 window.updateCartBadge(data.cartCount);
                             }
-                        }, 800); // รอ 800ms
+                        }, 800);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.message || 'ไม่สามารถเพิ่มสินค้าได้'
+                        });
                     }
                 })
                 .catch(error => {
@@ -135,8 +156,15 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถเพิ่มสินค้าได้'
+                        text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'
                     });
+                })
+                .finally(() => {
+                    // คืนค่าปุ่ม
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                    }, 500);
                 });
         });
     </script>

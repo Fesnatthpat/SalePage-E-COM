@@ -16,9 +16,9 @@ Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.s
 
 // --- 2. ตะกร้าสินค้า ---
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::get('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
-Route::get('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
-Route::get('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
+Route::post('/add-to-cart/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+Route::patch('/cart/update/{id}/{action}', [CartController::class, 'updateQuantity'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [CartController::class, 'removeItem'])->name('cart.remove');
 
 // --- 3. Login/Logout ---
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

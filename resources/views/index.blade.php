@@ -2,7 +2,7 @@
 
 @section('content')
 
-    {{-- HERO SECTION --}}
+    {{-- HERO SECTION (คงเดิม) --}}
     <div class="relative w-full h-[600px] lg:h-[700px] bg-gray-900 overflow-hidden">
         <div class="absolute inset-0">
             <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop"
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    {{-- SERVICE BAR --}}
+    {{-- SERVICE BAR (คงเดิม) --}}
     <div class="bg-white border-b border-gray-100 py-6">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x divide-gray-100">
@@ -102,7 +102,7 @@
                     @php
                         // 1. ราคาขายปัจจุบัน (pd_price)
                         $currentPrice = (float) $product->pd_price;
-                        
+
                         // 2. ราคาเต็มก่อนลด (pd_full_price)
                         // ใช้ operator ?? 0 เพื่อป้องกัน error ถ้า field นี้เป็น null
                         $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
@@ -114,8 +114,9 @@
                         $isOnSale = $discount > 0;
                     @endphp
 
+                    {{-- ★★★ เพิ่ม class flex flex-col h-full เพื่อจัด layout ให้ปุ่มอยู่ล่างสุดเสมอ ★★★ --}}
                     <div
-                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
+                        class="card bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full">
 
                         {{-- รูปภาพ --}}
                         <a href="{{ url('/product/' . $product->pd_id) }}">
@@ -133,7 +134,7 @@
                                 @endif
 
                                 <div
-                                    class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100">
+                                    class="absolute bottom-4 left-0 right-0 px-4 translate-y-full group-hover:translate-y-0 transition duration-300 opacity-0 group-hover:opacity-100 z-10">
                                     <a href="{{ url('/product/' . $product->pd_id) }}"
                                         class="btn btn-block bg-white/90 hover:bg-emerald-600 hover:text-white text-gray-800 border-none shadow-md text-sm h-10 min-h-0">
                                         ดูรายละเอียด
@@ -143,7 +144,8 @@
                         </a>
 
                         {{-- รายละเอียด --}}
-                        <div class="card-body p-4">
+                        {{-- ★★★ เพิ่ม flex-1 flex flex-col เพื่อดันปุ่มไปล่างสุด ★★★ --}}
+                        <div class="card-body p-4 flex-1 flex flex-col">
                             {{-- หมวดหมู่ (Mockup) --}}
                             <div class="text-xs text-gray-400 mb-1">สินค้าแนะนำ</div>
 
@@ -155,20 +157,36 @@
                                 </a>
                             </h2>
 
-                            <div class="flex justify-between items-end mt-2">
+                            <div class="flex justify-between items-end mt-2 mb-3">
                                 <div class="flex items-baseline gap-2">
-
                                     @if ($isOnSale)
                                         {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
-                                        <span class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
-                                        <span class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
+                                        <span
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
+                                        <span
+                                            class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
                                     @else
                                         {{-- กรณีไม่มีส่วนลด: แสดงราคาขายปัจจุบันสีเขียว --}}
-                                        <span class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
+                                        <span
+                                            class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                     @endif
-
                                 </div>
                             </div>
+
+                            {{-- ★★★ เพิ่มปุ่ม: Add to Cart (Quick Add) ★★★ --}}
+                            <div class="mt-auto">
+                                <button type="button"
+                                    onclick="addToCartQuick(this, '{{ route('cart.add', ['id' => $product->pd_id]) }}')"
+                                    class="btn btn-sm w-full btn-outline border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 font-bold gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    เพิ่มลงตะกร้า
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 @endforeach
@@ -183,4 +201,80 @@
             <a href="/allproducts" class="btn btn-outline w-full">ดูสินค้าทั้งหมด</a>
         </div>
     </div>
+
+    {{-- ★★★ SCRIPT จัดการปุ่มกด (เหมือนเดิมทุกประการ) ★★★ --}}
+    <script>
+        function addToCartQuick(btnElement, url) {
+            // ป้องกันการกดซ้ำ
+            if (btnElement.disabled) return;
+
+            // เก็บข้อความเดิม และเปลี่ยนเป็น Loading
+            const originalText = btnElement.innerHTML;
+            btnElement.disabled = true;
+            btnElement.innerHTML = '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
+
+            // ส่ง Request แบบ POST
+            const formData = new FormData();
+            formData.append('quantity', 1); // quantity is always 1 for quick add
+            // formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content')); // CSRF token handled by axios automatically or can be added manually
+
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Animation ลอยไปตะกร้า (ถ้ามี)
+                        if (typeof window.flyToCart === 'function') {
+                            window.flyToCart(btnElement);
+                        }
+
+                        // Popup แจ้งเตือนสำเร็จ
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'เพิ่มลงตะกร้าแล้ว',
+                            position: 'center',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+
+                        // อัปเดตตัวเลขที่เมนูตะกร้า (ถ้ามี)
+                        if (window.updateCartBadge) {
+                            window.updateCartBadge(data.cartCount);
+                        }
+                    } else {
+                        // แจ้งเตือน Error
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.message || 'ไม่สามารถเพิ่มสินค้าได้',
+                            position: 'center',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'
+                    });
+                })
+                .finally(() => {
+                    // คืนค่าปุ่มกลับสู่สภาพเดิม
+                    setTimeout(() => {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = originalText;
+                    }, 500);
+                });
+        }
+    </script>
 @endsection

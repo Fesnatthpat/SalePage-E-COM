@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite('resources/css/app.css')
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {{-- SweetAlert2 สำหรับแจ้งเตือนสวยๆ --}}
@@ -94,7 +95,7 @@
 
                 <div class="navbar-end flex items-center gap-2 md:gap-4">
 
-                    {{-- [แก้ไข 2] ปุ่มตะกร้า: เอา @auth ออก (ให้ Guest เห็นได้) และเพิ่ม id="cart-badge" --}}
+                    @auth
                     <a href="/cart" class="btn btn-ghost btn-circle relative hover:bg-gray-100">
                         <div class="indicator">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none"
@@ -109,6 +110,7 @@
                             </span>
                         </div>
                     </a>
+                    @endauth
 
                     {{-- ... (ส่วน Login / Profile คงเดิม) ... --}}
                     @guest

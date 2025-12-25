@@ -153,12 +153,22 @@ class PaymentController extends Controller
     // [Step 3] แสดงหน้า QR Code
     public function showQr($orderId)
     {
+        // ใช้ ord_code ในการค้นหา (ตรงกับที่ create ไว้ใน step 2)
         $order = Order::where('ord_code', $orderId)->first();
 
         if (! $order) {
             return redirect()->route('home')->with('error', 'ไม่พบคำสั่งซื้อ');
         }
 
-        return view('qr', compact('order'));
+        // เพิ่มข้อมูลธนาคารตรงนี้ (หรือดึงจาก Config/DB ก็ได้)
+        $bankInfo = [
+            'name' => 'ธนาคารกสิกรไทย',
+            'account_name' => 'บจก. เอช แอนด์ เอ็ม-อาร์ สโตร์',
+            'account_number' => '012-3-45678-9',
+            'line_id' => '@YOUR_LINE_ID', // ใส่ LINE ID จริงของร้าน
+        ];
+
+        // ส่งทั้ง $order และ $bankInfo ไปที่ View
+        return view('qr', compact('order', 'bankInfo'));
     }
 }

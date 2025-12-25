@@ -78,7 +78,7 @@
                                 {{-- ========================================================= --}}
 
                                 <div
-                                    class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group">
+                                    class="card bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all rounded-b-md overflow-hidden duration-300 group flex flex-col h-full">
                                     <a href="{{ url('/product/' . $product->pd_id) }}">
                                         <figure class="relative aspect-[4/5] overflow-hidden bg-gray-100">
                                             <img src="https://crm.kawinbrothers.com/product_images/{{ $product->pd_img }}"
@@ -95,29 +95,42 @@
                                         </figure>
                                     </a>
 
-                                    <div class="card-body p-4">
+                                    <div class="card-body p-4 flex flex-col flex-1">
                                         <h2
                                             class="card-title text-sm font-bold text-gray-800 leading-tight min-h-[2.5em] line-clamp-2">
                                             <a href="{{ url('/product/' . $product->pd_id) }}"
                                                 class="hover:text-emerald-600 transition">{{ $product->pd_name }}</a>
                                         </h2>
-                                        <div class="flex justify-between items-end mt-2">
-                                            <div class="flex flex-col">
 
-                                                {{-- [แก้ใหม่] ส่วนแสดงราคา --}}
+                                        {{-- ส่วนราคาและปุ่มเพิ่มลงตะกร้า --}}
+                                        <div class="mt-auto pt-2">
+                                            <div class="flex flex-col mb-3">
                                                 @if ($isOnSale)
-                                                    {{-- กรณีมีส่วนลด: แสดงราคาขายปัจจุบัน (สีเขียว) + ราคาเต็มขีดฆ่า (สีเทา) --}}
                                                     <span
                                                         class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                                     <span
-                                                        class="text-xs text-gray-400 line-through">฿{{ number_format($fullPrice) }}</span>
+                                                        class="text-xs text-gray-400 line-through">฿{{ number_format($currentPrice) }}</span>
                                                 @else
-                                                    {{-- กรณีไม่มีส่วนลด: แสดงราคาปกติสีเขียว --}}
                                                     <span
                                                         class="text-lg font-bold text-emerald-600">฿{{ number_format($currentPrice) }}</span>
                                                 @endif
-
                                             </div>
+
+                                            {{-- ★★★ [เพิ่ม] ปุ่มเพิ่มลงตะกร้า ★★★ --}}
+                                            <form class="add-to-cart-form-listing w-full"
+                                                data-action="{{ route('cart.add', ['id' => $product->pd_id]) }}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit"
+                                                    class="btn btn-sm w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-sm flex items-center justify-center gap-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                    เพิ่มลงตะกร้า
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -136,4 +149,83 @@
             </div>
         </div>
     </div>
+
+    {{-- ★★★ [เพิ่ม] Script สำหรับจัดการปุ่มเพิ่มตะกร้าในหน้า Loop ★★★ --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.add-to-cart-form-listing');
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const currentForm = this;
+                    const submitBtn = currentForm.querySelector('button[type="submit"]');
+                    const actionUrl = currentForm.getAttribute('data-action');
+                    const quantity = currentForm.querySelector('[name="quantity"]').value;
+
+                    // เพิ่ม Effect กดปุ่มให้รู้ว่ากดแล้ว
+                    const originalBtnContent = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML =
+                        '<span class="loading loading-spinner loading-xs"></span> กำลังเพิ่ม...';
+
+                    const formData = new FormData();
+                    formData.append('quantity', quantity);
+
+                    fetch(actionUrl, { // Use actionUrl directly for POST
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // 1. Animation Fly (ถ้ามี)
+                                if (typeof window.flyToCart === 'function') {
+                                    window.flyToCart(submitBtn);
+                                }
+
+                                // 2. Popup Success
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'เพิ่มลงตะกร้าแล้ว',
+                                    text: 'สินค้าถูกเพิ่มเรียบร้อย',
+                                    position: 'center',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+
+                                // 3. Update Badge
+                                setTimeout(() => {
+                                    if (window.updateCartBadge) {
+                                        window.updateCartBadge(data.cartCount);
+                                    }
+                                }, 500);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถเพิ่มสินค้าได้',
+                                position: 'center',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        })
+                        .finally(() => {
+                            // คืนค่าปุ่มกลับสู่สภาพเดิม
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnContent;
+                        });
+                });
+            });
+        });
+    </script>
 @endsection
