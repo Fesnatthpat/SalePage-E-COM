@@ -1,66 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Salepage-3 E-commerce Project
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+โปรเจคนี้เป็นระบบ E-commerce ขนาดเล็กที่สร้างขึ้นด้วย Laravel Framework โดยมีฟังก์ชันการทำงานที่จำเป็นครบถ้วน ตั้งแต่การเลือกซื้อสินค้าไปจนถึงการชำระเงินและติดตามสถานะ
 
-## About Laravel
+## ✨ คุณสมบัติหลัก (Key Features)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **ระบบสินค้า:**
+  - หน้าแสดงสินค้าทั้งหมด (Product Listing) พร้อมระบบค้นหา
+  - หน้าแสดงรายละเอียดสินค้า (Product Detail)
+  - การคำนวณราคาโปรโมชันและส่วนลด
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **ระบบตะกร้าสินค้า:**
+  - เพิ่ม, ลบ, และอัปเดตจำนวนสินค้าในตะกร้า
+  - รองรับตะกร้าสำหรับผู้ใช้ทั่วไป (Guest)
+  - **การรวมตะกร้า (Cart Merging):** เมื่อผู้ใช้ทั่วไป (Guest) เข้าสู่ระบบ สินค้าในตะกร้าจะถูกรวมเข้ากับบัญชีผู้ใช้โดยอัตโนมัติ
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **ระบบสมาชิกและการยืนยันตัวตน:**
+  - เข้าสู่ระบบด้วย LINE (Laravel Socialite)
+  - การจัดการที่อยู่จัดส่ง (เพิ่ม, ลบ, แก้ไข)
+  - **Soft Deletes:** การลบที่อยู่จะเป็นการซ่อนข้อมูลแทนการลบออกจากฐานข้อมูลอย่างถาวร
 
-## Learning Laravel
+- **กระบวนการสั่งซื้อและชำระเงิน:**
+  - หน้า Checkout สำหรับเลือกที่อยู่และสรุปรายการ
+  - สร้างคำสั่งซื้อ (Order) และบันทึกรายละเอียด (Order Details)
+  - สร้างหน้า QR Code สำหรับการชำระเงิน
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **ระบบจัดการคำสั่งซื้อ:**
+  - หน้าประวัติการสั่งซื้อ (Order History) สำหรับผู้ใช้ที่เข้าระบบ
+  - หน้าแสดงรายละเอียดคำสั่งซื้อ (Order Detail)
+  - หน้าติดตามสถานะคำสั่งซื้อ (Order Tracking) สำหรับผู้ใช้ทุกคน (เพียงกรอกรหัสคำสั่งซื้อ)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🌟 โครงสร้างโค้ดและการปรับปรุง (Code Structure & Refinements)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+โค้ดในโปรเจคนี้ได้รับการปรับปรุงโครงสร้างเพื่อเพิ่มความเป็นระเบียบ, ลดความซับซ้อน, และง่ายต่อการบำรุงรักษาในอนาคต โดยยึดตามหลักการ "Thin Controllers" และ "Service Layer"
 
-## Laravel Sponsors
+- **Service Layer (`app/Services`):**
+  - ได้สร้าง `CartService` เพื่อรวบรวม Business Logic ทั้งหมดที่เกี่ยวกับการจัดการตะกร้าสินค้าไว้ที่เดียว
+  - ทำให้ Controller (เช่น `CartController`, `AuthController`) มีขนาดเล็กลงและมีหน้าที่เพียงแค่รับส่ง Request/Response เท่านั้น
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Model Accessors:**
+  - Logic ในการจัดการข้อมูลเพื่อการแสดงผล (เช่น การจัดรูปแบบวันที่, การคำนวณราคา) ถูกย้ายเข้าไปไว้ใน Model ที่เกี่ยวข้อง (เช่น `Order`, `Product`)
+  - ช่วยให้โค้ดในหน้า View สะอาดขึ้น และทำให้การแสดงผลข้อมูลสอดคล้องกันทุกส่วนของแอปพลิเคชัน
 
-### Premium Partners
+- **Security Enhancements:**
+  - **CSRF Protection:** แก้ไขช่องโหว่โดยการเปลี่ยน Route ที่มีการแก้ไขข้อมูลให้ใช้ `POST`/`PATCH`/`DELETE` พร้อมการป้องกันด้วย CSRF Token
+  - **Authorization:** เพิ่มการตรวจสอบสิทธิ์เพื่อให้ผู้ใช้สามารถเข้าถึงได้เฉพาะข้อมูลของตนเอง (เช่น ประวัติการสั่งซื้อ, ที่อยู่)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+การปรับปรุงเหล่านี้ทำให้โค้ดเป็นไปตามมาตรฐานการพัฒนา Laravel ที่ดี และเตรียมพร้อมสำหรับการต่อยอดฟีเจอร์ใหม่ๆ ในอนาคต
 
-## Contributing
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **Backend:**
+  - PHP 8.1+
+  - Laravel 10
+  - `darryldecode/cart` (สำหรับจัดการตะกร้าสินค้า)
+  - `laravel/socialite` & `socialiteproviders/line` (สำหรับ Login ด้วย LINE)
+- **Frontend:**
+  - Vite
+  - Tailwind CSS
+  - DaisyUI
+  - Alpine.js
+  - SweetAlert2
+- **Database:**
+  - MySQL
 
-## Code of Conduct
+## 🚀 การติดตั้ง (Getting Started)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+ทำตามขั้นตอนต่อไปนี้เพื่อติดตั้งโปรเจคและรันบนเครื่องของคุณ
 
-## Security Vulnerabilities
+### สิ่งที่ต้องมี (Prerequisites)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- PHP >= 8.1
+- Composer
+- Node.js & NPM
+- MySQL หรือฐานข้อมูลอื่นที่ Laravel รองรับ
 
-## License
+### ขั้นตอนการติดตั้ง
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+1. **Clone a repository**
+   ```bash
+   git clone <your-repository-url>
+   cd Salepage-3
+   ```
+
+2. **ติดตั้ง PHP Dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **ตั้งค่า Environment**
+   - คัดลอกไฟล์ `.env.example` ไปเป็น `.env`
+     ```bash
+     cp .env.example .env
+     ```
+   - สร้าง Application Key
+     ```bash
+     php artisan key:generate
+     ```
+   - แก้ไขข้อมูลการเชื่อมต่อฐานข้อมูลในไฟล์ `.env`
+     ```
+     DB_CONNECTION=mysql
+     DB_HOST=127.0.0.1
+     DB_PORT=3306
+     DB_DATABASE=your_database_name
+     DB_USERNAME=your_database_user
+     DB_PASSWORD=your_database_password
+     ```
+   - เพิ่มการตั้งค่าสำหรับ LINE Login ใน `.env` (หากต้องการทดสอบ)
+     ```
+     LINE_CLIENT_ID=your_line_client_id
+     LINE_CLIENT_SECRET=your_line_client_secret
+     LINE_REDIRECT_URI=http://localhost:8000/callback/line
+     ```
+
+4. **รัน Database Migrations**
+   ```bash
+   php artisan migrate
+   ```
+   **หมายเหตุ:** หากคุณมีตารางในฐานข้อมูลอยู่แล้วและคำสั่งนี้ล้มเหลว อาจต้องรัน migration เฉพาะไฟล์ใหม่ หรือปรึกษาผู้พัฒนาก่อนใช้คำสั่ง `php artisan migrate:fresh` ซึ่งจะลบข้อมูลทั้งหมด
+
+5. **ติดตั้ง Frontend Dependencies**
+   ```bash
+   npm install
+   ```
+
+6. **รันเซิร์ฟเวอร์**
+   - รัน Development Server ของ Laravel
+     ```bash
+     php artisan serve
+     ```
+   - รัน Vite สำหรับคอมไพล์ไฟล์ Frontend
+     ```bash
+     npm run dev
+     ```
+
+7. **เข้าสู่เว็บไซต์**
+   เปิดเบราว์เซอร์และไปที่ `http://localhost:8000`
+
+## 📄 สิทธิ์การใช้งาน (License)
+
+โปรเจคนี้อยู่ภายใต้สิทธิ์การใช้งานของ MIT License.
