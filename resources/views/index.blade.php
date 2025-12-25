@@ -100,18 +100,11 @@
             @if (isset($recommendedProducts) && count($recommendedProducts) > 0)
                 @foreach ($recommendedProducts as $product)
                     @php
-                        // 1. ราคาขายปัจจุบัน (pd_price)
+                        // More robust price calculation
                         $currentPrice = (float) $product->pd_price;
-
-                        // 2. ราคาเต็มก่อนลด (pd_full_price)
-                        // ใช้ operator ?? 0 เพื่อป้องกัน error ถ้า field นี้เป็น null
-                        $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
-
-                        // 3. ส่วนลดจากตาราง product_salepage (field: pd_sp_discount)
                         $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-
-                        // เช็คว่ามีส่วนลดจริงหรือไม่ (มากกว่า 0 บาท)
-                        $isOnSale = $discount > 0;
+                        $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+                        $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
                     @endphp
 
                     {{-- ★★★ เพิ่ม class flex flex-col h-full เพื่อจัด layout ให้ปุ่มอยู่ล่างสุดเสมอ ★★★ --}}

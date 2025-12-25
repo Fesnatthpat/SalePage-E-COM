@@ -63,17 +63,11 @@
                                 {{-- [Logic คำนวณราคา แบบเดียวกับหน้า Index] --}}
                                 {{-- ========================================================= --}}
                                 @php
-                                    // 1. ราคาขายปัจจุบัน (pd_price)
+                                    // More robust price calculation
                                     $currentPrice = (float) $product->pd_price;
-
-                                    // 2. ราคาเต็มก่อนลด (pd_full_price)
-                                    $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
-
-                                    // 3. ส่วนลด (pd_sp_discount)
                                     $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-
-                                    // 4. เช็คว่ามีส่วนลดไหม
-                                    $isOnSale = $discount > 0;
+                                    $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+                                    $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
                                 @endphp
                                 {{-- ========================================================= --}}
 

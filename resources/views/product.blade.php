@@ -3,10 +3,11 @@
 @section('content')
     {{-- Logic PHP คงเดิม --}}
     @php
+        // More robust price calculation
         $currentPrice = (float) $product->pd_price;
-        $fullPrice = isset($product->pd_full_price) ? (float) $product->pd_full_price : 0;
         $discount = isset($product->pd_sp_discount) ? (float) $product->pd_sp_discount : 0;
-        $isOnSale = $discount > 0;
+        $fullPrice = isset($product->pd_full_price) && $product->pd_full_price > 0 ? (float) $product->pd_full_price : ($currentPrice + $discount);
+        $isOnSale = $discount > 0 && $fullPrice > $currentPrice;
     @endphp
 
     <div x-data="{
