@@ -12,4 +12,12 @@ class OrderDetail extends Model
     protected $table = 'order_detail'; // ชื่อตารางใน DB (ไม่มี s)
     protected $primaryKey = 'ordd_id'; // ระบุ PK ให้ตรง
     protected $guarded = [];
+
+    /**
+     * Get the product associated with the order detail.
+     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'pd_id', 'pd_id');
+    }
 }

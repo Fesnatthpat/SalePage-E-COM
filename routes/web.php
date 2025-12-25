@@ -5,6 +5,7 @@ use App\Http\Controllers\AllProductController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +38,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payment/qr/{orderId}', [PaymentController::class, 'showQr'])->name('payment.qr');
 
     // ประวัติการสั่งซื้อ (ถ้ามี)
-    // Route::get('/orderhistory', [App\Http\Controllers\OrderController::class, 'index'])->name('order.history');
+    Route::get('/orderhistory', [OrderController::class, 'index'])->name('order.history');
+    Route::get('/order/{orderCode}', [OrderController::class, 'show'])->name('order.show');
 
     // Address Management
     Route::get('/address', [AddressController::class, 'index'])->name('address.index');
@@ -45,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
     Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
 });
+
+// --- General Tracking (Guest & Auth) ---
+Route::get('/ordertracking', [OrderController::class, 'showTrackingForm'])->name('order.tracking.form');
+Route::post('/ordertracking', [OrderController::class, 'trackOrder'])->name('order.tracking');
+
 
 // API
 Route::get('/api/amphures/{province_id}', [AddressController::class, 'getAmphures']);

@@ -3,6 +3,18 @@
 @section('content')
     <div class="container mx-auto p-4 lg:px-20 lg:py-10 max-w-7xl">
 
+        {{-- Display Validation Errors --}}
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 shadow-md" role="alert">
+                <strong class="font-bold">เกิดข้อผิดพลาด!</strong>
+                <ul class="mt-2 list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         {{-- คำนวณยอดรวม --}}
         @php
             $grandTotal = isset($totalAmount) ? $totalAmount : 0;
@@ -467,7 +479,20 @@
         function handlePaymentSubmit() {
             const storedId = localStorage.getItem('selected_address_id');
             const defaultId = "{{ $addresses->count() > 0 ? $addresses->first()->id : '' }}";
-            document.getElementById('hidden_address_id').value = storedId ? storedId : defaultId;
+            const finalId = storedId ? storedId : defaultId;
+
+            if (!finalId) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'กรุณาเลือกที่อยู่',
+                    text: 'โปรดเลือกหรือเพิ่มที่อยู่สำหรับจัดส่งสินค้าก่อนดำเนินการต่อ',
+                    position: 'center',
+                    confirmButtonColor: '#4F46E5'
+                });
+                return false; // Prevent form submission
+            }
+
+            document.getElementById('hidden_address_id').value = finalId;
             showLoading();
             return true;
         }

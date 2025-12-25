@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Order extends Model
 {
@@ -16,5 +17,15 @@ class Order extends Model
     public function details()
     {
         return $this->hasMany(OrderDetail::class, 'ord_id', 'ord_id');
+    }
+
+    /**
+     * Get the formatted order date.
+     *
+     * @return string
+     */
+    public function getFormattedOrdDateAttribute()
+    {
+        return Carbon::parse($this->ord_date)->format('d/m/Y H:i');
     }
 }
